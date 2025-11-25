@@ -1,0 +1,128 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Administrateur - Moteur de Recherche</title>
+    <style>
+        /*
+        ===================================
+        Styles CSS de la Page de Connexion
+        ===================================
+        */
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            background-color: #e9ecef; /* Fond gris clair pour l'arrière-plan */
+            color: #333;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh; /* Centrer verticalement */
+        }
+
+        .login-box {
+            background: white;
+            padding: 40px;
+            border-radius: 8px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Ombre portée douce */
+            width: 100%;
+            max-width: 350px; /* Largeur maximale de la boîte */
+            text-align: center;
+        }
+
+        .login-box h2 {
+            color: #343a40; /* Couleur du titre */
+            margin-bottom: 25px;
+            font-size: 1.8em;
+        }
+
+        #login-form input {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            box-sizing: border-box; /* S'assure que le padding est inclus dans la largeur */
+            font-size: 16px;
+        }
+
+        #login-form button {
+            width: 100%;
+            background-color: #007bff; /* Bleu primaire */
+            color: white;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            margin-top: 20px;
+            font-size: 1.1em;
+            transition: background-color 0.3s ease;
+        }
+
+        #login-form button:hover {
+            background-color: #0056b3;
+        }
+
+        .error-message {
+            color: #dc3545; /* Rouge pour les erreurs */
+            margin-top: 15px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="login-box">
+        <h2>🔒 Accès Administrateur</h2>
+        <form id="login-form">
+            <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+            
+            <input type="password" id="password" placeholder="Mot de passe" required>
+            
+            <button type="submit">Se connecter</button>
+            <p id="login-error" class="error-message"></p>
+        </form>
+    </div>
+
+    <script>
+        // --- LOGIQUE DE CONNEXION SIMULÉE ---
+        
+        // Les identifiants doivent être gérés par un backend sécurisé en production !
+        const ADMIN_USER = 'admin';
+        const ADMIN_PASS = '1234'; 
+        const ADMIN_DASHBOARD_URL = 'admin.html'; // URL vers votre tableau de bord réel
+        
+        document.getElementById('login-form').addEventListener('submit', function(event) {
+            event.preventDefault(); // Empêche le rechargement de la page
+            
+            const username = document.getElementById('username').value;
+            const password = document.getElementById('password').value;
+            const errorEl = document.getElementById('login-error');
+
+            errorEl.textContent = ""; // Réinitialise le message d'erreur
+
+            if (username === ADMIN_USER && password === ADMIN_PASS) {
+                // En cas de succès de l'authentification
+                alert('Connexion réussie ! Redirection vers le tableau de bord.');
+                
+                // Enregistrer l'état de connexion (simulé) et rediriger
+                // En production, le serveur émettrait un token de session ici.
+                localStorage.setItem('isLoggedIn', 'true'); 
+                window.location.href = ADMIN_DASHBOARD_URL; 
+            } else {
+                // En cas d'échec
+                errorEl.textContent = "Nom d'utilisateur ou mot de passe incorrect.";
+            }
+        });
+
+        // Optionnel : Rediriger si déjà connecté (pour éviter de re-saisir)
+        document.addEventListener('DOMContentLoaded', function() {
+            if (localStorage.getItem('isLoggedIn') === 'true') {
+                 //window.location.href = ADMIN_DASHBOARD_URL; 
+                 // Décommenter si vous souhaitez rediriger directement
+            }
+        });
+    </script>
+</body>
+</html>
