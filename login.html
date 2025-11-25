@@ -3,124 +3,60 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Administrateur - Moteur de Recherche</title>
-    <style>
-        /*
-        ===================================
-        Styles CSS de la Page de Connexion
-        ===================================
-        */
-        body {
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            margin: 0;
-            background-color: #e9ecef; /* Fond gris clair pour l'arrière-plan */
-            color: #333;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            min-height: 100vh; /* Centrer verticalement */
-        }
-
-        .login-box {
-            background: white;
-            padding: 40px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1); /* Ombre portée douce */
-            width: 100%;
-            max-width: 350px; /* Largeur maximale de la boîte */
-            text-align: center;
-        }
-
-        .login-box h2 {
-            color: #343a40; /* Couleur du titre */
-            margin-bottom: 25px;
-            font-size: 1.8em;
-        }
-
-        #login-form input {
-            width: 100%;
-            padding: 12px;
-            margin: 10px 0;
-            border: 1px solid #ccc;
-            border-radius: 4px;
-            box-sizing: border-box; /* S'assure que le padding est inclus dans la largeur */
-            font-size: 16px;
-        }
-
-        #login-form button {
-            width: 100%;
-            background-color: #007bff; /* Bleu primaire */
-            color: white;
-            padding: 12px;
-            border: none;
-            border-radius: 4px;
-            cursor: pointer;
-            margin-top: 20px;
-            font-size: 1.1em;
-            transition: background-color 0.3s ease;
-        }
-
-        #login-form button:hover {
-            background-color: #0056b3;
-        }
-
-        .error-message {
-            color: #dc3545; /* Rouge pour les erreurs */
-            margin-top: 15px;
-            font-weight: bold;
-        }
-    </style>
+    <title>Connexion Admin - OmniSearch</title>
+    <link rel="stylesheet" href="admin-style.css">
 </head>
-<body>
+<body class="login-body">
 
-    <div class="login-box">
-        <h2>🔒 Accès Administrateur</h2>
+    <div class="login-card">
+        <div class="login-header">
+            <h2>🔐 Accès Sécurisé</h2>
+            <p>Veuillez vous identifier pour accéder au panel.</p>
+        </div>
+        
         <form id="login-form">
-            <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+            <div class="form-group">
+                <label for="username">Identifiant</label>
+                <input type="text" id="username" placeholder="ex: admin" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">Mot de passe</label>
+                <input type="password" id="password" placeholder="••••••••" required>
+            </div>
+
+            <button type="submit" class="btn-primary">Se Connecter</button>
             
-            <input type="password" id="password" placeholder="Mot de passe" required>
-            
-            <button type="submit">Se connecter</button>
-            <p id="login-error" class="error-message"></p>
+            <p id="error-msg" class="error-text"></p>
         </form>
+        
+        <div class="login-footer">
+            <a href="index.html">← Retour au site</a>
+        </div>
     </div>
 
     <script>
-        // --- LOGIQUE DE CONNEXION SIMULÉE ---
-        
-        // Les identifiants doivent être gérés par un backend sécurisé en production !
-        const ADMIN_USER = 'admin';
-        const ADMIN_PASS = '1234'; 
-        const ADMIN_DASHBOARD_URL = 'admin.html'; // URL vers votre tableau de bord réel
-        
-        document.getElementById('login-form').addEventListener('submit', function(event) {
-            event.preventDefault(); // Empêche le rechargement de la page
+        // --- LOGIQUE DE CONNEXION ---
+        const ADMIN_USER = "admin";
+        const ADMIN_PASS = "1234"; // À changer pour la sécurité !
+
+        document.getElementById('login-form').addEventListener('submit', function(e) {
+            e.preventDefault();
             
-            const username = document.getElementById('username').value;
-            const password = document.getElementById('password').value;
-            const errorEl = document.getElementById('login-error');
+            const user = document.getElementById('username').value;
+            const pass = document.getElementById('password').value;
+            const errorMsg = document.getElementById('error-msg');
 
-            errorEl.textContent = ""; // Réinitialise le message d'erreur
-
-            if (username === ADMIN_USER && password === ADMIN_PASS) {
-                // En cas de succès de l'authentification
-                alert('Connexion réussie ! Redirection vers le tableau de bord.');
-                
-                // Enregistrer l'état de connexion (simulé) et rediriger
-                // En production, le serveur émettrait un token de session ici.
-                localStorage.setItem('isLoggedIn', 'true'); 
-                window.location.href = ADMIN_DASHBOARD_URL; 
+            if (user === ADMIN_USER && pass === ADMIN_PASS) {
+                // Succès : On enregistre le token dans le stockage local
+                localStorage.setItem('isLoggedIn', 'true');
+                window.location.href = 'admin.html';
             } else {
-                // En cas d'échec
-                errorEl.textContent = "Nom d'utilisateur ou mot de passe incorrect.";
-            }
-        });
-
-        // Optionnel : Rediriger si déjà connecté (pour éviter de re-saisir)
-        document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('isLoggedIn') === 'true') {
-                 //window.location.href = ADMIN_DASHBOARD_URL; 
-                 // Décommenter si vous souhaitez rediriger directement
+                // Échec
+                errorMsg.textContent = "Identifiant ou mot de passe incorrect.";
+                // Petite animation de secousse (optionnel via CSS)
+                document.querySelector('.login-card').style.animation = "shake 0.3s";
+                setTimeout(() => document.querySelector('.login-card').style.animation = "", 300);
             }
         });
     </script>
