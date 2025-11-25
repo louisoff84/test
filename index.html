@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🧠 Recherche IA par Groq</title>
+    <style>
+        /* Styles CSS (similaire aux versions précédentes) */
+        body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f4f9; }
+        header { text-align: center; padding: 20px; background-color: #fff; border-radius: 8px; margin-bottom: 20px; }
+        #search-interface { display: flex; gap: 10px; margin-bottom: 30px; justify-content: center; }
+        #query-input, #language-select, #search-interface button { padding: 10px; border-radius: 5px; border: 1px solid #ccc; }
+        #search-interface button { background-color: #0b2848; color: white; border: none; cursor: pointer; }
+        #results-container { 
+            max-width: 800px;
+            margin: 20px auto;
+            background-color: #fff;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            text-align: left;
+        }
+        #ai-response {
+            white-space: pre-wrap; /* Maintient les sauts de ligne et les espaces de l'IA */
+            padding-top: 15px;
+            line-height: 1.6;
+        }
+        .ai-title {
+            color: #0b2848;
+            border-bottom: 2px solid #eee;
+            padding-bottom: 10px;
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>Moteur de Recherche IA par Groq 🚀</h1>
+        <p>Utilisez l'intelligence artificielle pour synthétiser et résumer vos recherches.</p>
+    </header>
+
+    <main>
+        <section id="search-interface">
+            <input type="text" id="query-input" placeholder="Ex: Résumé du livre La nuit des temps" value="Dune le livre et le film">
+            <select id="language-select">
+                <option value="fr" selected>Français</option>
+                <option value="en">Anglais</option>
+                <option value="es">Espagnol</option>
+            </select>
+            <button onclick="performGroqSearch()">Rechercher IA</button>
+        </section>
+
+        <section id="results-container">
+            <h2 class="ai-title">Réponse de l'IA 🤖</h2>
+            <div id="ai-response">
+                </div>
+        </section>
+        
+        <p id="loading-indicator" style="display: none; text-align: center;">L'IA de Groq génère votre réponse...</p>
+        <p id="error-message" style="color: red; text-align: center;"></p>
+    </main>
+
+    <script>
+        // ⚠️ ATTENTION : Vous DEVEZ remplacer cette valeur par votre clé API Groq.
+        const GROQ_API_KEY = "VOTRE_CLE_API_GROQ"; 
+        const GROQ_MODEL = "llama3-8b-8192"; // Un modèle rapide et efficace
+        
+        // L'URL de l'API de complétion
+        const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+
+        function clearResults() {
+            document.getElementById('ai-response').textContent = '';
+            document.getElementById('error-message').textContent = '';
+        }
+
+        function showLoading(isVisible) {
+            document.getElementById('loading-indicator').style.display = isVisible ? 'block' : 'none';
+        }
+
+        async function performGroqSearch() {
+            const query = document.getElementById('query-input').value.trim();
+            const lang = document.getElementById('language-select').value;
+            
+            if (!query) {
+                alert("Veuillez entrer un terme de recherche.");
+                return;
+            }
+
+            if (GROQ_API_KEY === "VOTRE_CLE_API_GROQ") {
+                 document.getElementById('error-message').textContent = "Erreur: Veuillez insérer votre Clé API Groq.";
+                 return;
+            }
+
+            clearResults();
+            showLoading(true);
+
+            // Création du prompt (instruction) pour l'IA
+            const systemPrompt = `Tu es un moteur de méta-recherche multilingue. Réponds à la requête de l'utilisateur de manière concise et factuelle. La réponse doit être exclusivement en langue ${lang}. Inclure des informations sur les livres, les films, ou d'autres médias pertinents au sujet. Utilise des listes ou des titres pour structurer ta réponse.`;
+
+            try {
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: GROQ_MODEL,
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7, // Équilibre entre créativité et précision
+                    })
+                });
+
+                if (!response.ok) {
+                    // Tente de lire l'erreur de l'API
+                    const errorData = await response.json();
+                    throw new Error(errorData.error ? errorData.error.message : `Erreur HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                
+                // Extraction du contenu de la réponse de l'IA
+                const aiResponseContent = data.choices[0].message.content;
+                
+                // Affichage du contenu
+                document.getElementById('ai-response').textContent = aiResponseContent;
+
+            } catch (error) {
+                console.error("Erreur de l'API Groq:", error);
+                document.getElementById('error-message').textContent = `Erreur lors de la communication avec l'IA. (${error.message})`;
+            } finally {
+                showLoading(false);
+            }
+        }
+    </script>
+</body>
+</html>
