@@ -1,124 +1,190 @@
-/* --- Styles Généraux --- */
+/* =========================================
+   RESET ET BASE
+   ========================================= */
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    margin: 0;
-    background-color: #f4f4f9;
-    color: #333;
+    background-color: #f8f9fa;
+    color: #202124;
+    line-height: 1.6;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
 }
+
+/* =========================================
+   EN-TÊTE (HEADER)
+   ========================================= */
 header {
-    background-color: #007bff;
-    color: white;
-    padding: 20px;
+    display: flex;
+    justify-content: flex-end; /* Pousse le lien admin à droite */
+    padding: 20px 30px;
+}
+
+.admin-link {
+    text-decoration: none;
+    color: #5f6368;
+    font-size: 0.9rem;
+    padding: 8px 16px;
+    border-radius: 4px;
+    transition: background-color 0.2s;
+}
+
+.admin-link:hover {
+    background-color: #e8eaed;
+    color: #202124;
+}
+
+/* =========================================
+   CONTENU PRINCIPAL
+   ========================================= */
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 40px 20px;
+    max-width: 800px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+h1 {
+    font-size: 2.5rem;
+    color: #202124;
+    margin-bottom: 10px;
     text-align: center;
 }
-.page {
-    padding: 30px;
+
+.subtitle {
+    color: #5f6368;
+    margin-bottom: 40px;
+    text-align: center;
 }
-/* --- Styles Login --- */
-#login-page {
+
+/* =========================================
+   INTERFACE DE RECHERCHE
+   ========================================= */
+.search-container {
+    width: 100%;
+    background: white;
+    border: 1px solid #dfe1e5;
+    border-radius: 24px; /* Bordure arrondie style moteur de recherche */
+    padding: 10px 15px;
     display: flex;
+    align-items: center;
+    box-shadow: 0 1px 6px rgba(32, 33, 36, 0.1);
+    transition: box-shadow 0.2s;
+}
+
+.search-container:hover, .search-container:focus-within {
+    box-shadow: 0 1px 6px rgba(32, 33, 36, 0.28);
+    border-color: rgba(223, 225, 229, 0);
+}
+
+#query-input {
+    flex-grow: 1;
+    border: none;
+    outline: none;
+    font-size: 1.1rem;
+    padding: 10px;
+    color: #202124;
+}
+
+#language-select {
+    border: none;
+    background: transparent;
+    margin: 0 10px;
+    color: #5f6368;
+    cursor: pointer;
+    font-size: 0.9rem;
+    outline: none;
+}
+
+.search-btn {
+    background-color: #4285f4;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 10px 25px;
+    font-size: 1rem;
+    font-weight: bold;
+    cursor: pointer;
+    transition: background-color 0.2s;
+}
+
+.search-btn:hover {
+    background-color: #357ae8;
+}
+
+/* =========================================
+   ZONES DE RÉSULTATS
+   ========================================= */
+#results-area {
+    width: 100%;
+    margin-top: 40px;
+}
+
+.ai-card {
+    background: white;
+    padding: 30px;
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.08);
+    border: 1px solid #f0f0f0;
+    white-space: pre-wrap; /* Conserve le formatage de l'IA */
+}
+
+.loading {
+    text-align: center;
+    color: #5f6368;
+    margin-top: 20px;
+    font-style: italic;
+}
+
+.error {
+    color: #d93025;
+    text-align: center;
+    margin-top: 20px;
+    background: #fce8e6;
+    padding: 10px;
+    border-radius: 8px;
+}
+
+/* =========================================
+   ÉCRANS SPÉCIAUX (Maintenance / Bloqué)
+   ========================================= */
+.overlay-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: #f8f9fa;
+    display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
-    height: 100vh;
-    background-color: #e9ecef;
-}
-.login-box {
-    background: white;
-    padding: 40px;
-    border-radius: 8px;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
-    width: 300px;
+    z-index: 1000;
     text-align: center;
-}
-#login-form input {
-    width: 100%;
-    padding: 10px;
-    margin: 10px 0;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-    box-sizing: border-box;
-}
-#login-form button {
-    width: 100%;
-    background-color: #28a745;
-    color: white;
-    padding: 10px;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
-    margin-top: 10px;
-}
-.error-message {
-    color: red;
-    margin-top: 10px;
-}
-/* --- Styles Admin Dashboard --- */
-#admin-page header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 15px 30px;
-    background-color: #343a40;
-}
-#admin-page header h2 {
-    margin: 0;
-}
-.admin-section {
-    background: white;
-    margin-bottom: 20px;
     padding: 20px;
-    border-radius: 6px;
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
-.status-control {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px 0;
-    border-bottom: 1px solid #eee;
-}
-.status-badge {
-    padding: 5px 10px;
-    border-radius: 4px;
-    font-weight: bold;
-    color: white;
-}
-.status-badge.on {
-    background-color: #dc3545; /* Rouge pour Maintenance */
-}
-.status-badge.off {
-    background-color: #28a745; /* Vert pour Opérationnel */
-}
-.account-control {
-    display: flex;
-    gap: 10px;
-    margin-top: 15px;
-}
-.account-control input {
-    flex-grow: 1;
-    padding: 8px;
-    border: 1px solid #ccc;
-    border-radius: 4px;
-}
-.info-message {
-    color: #007bff;
-    margin-top: 10px;
-}
-/* --- Styles Site Principal --- */
-#main-site {
-    padding: 30px;
-    text-align: center;
-}
-#maintenance-banner {
-    background-color: #ffc107;
-    color: #333;
-    padding: 15px;
-    border-radius: 5px;
-    margin: 20px 0;
-    font-size: 1.1em;
-}
-#search-section {
-    padding: 50px;
-    border: 1px dashed #ccc;
+
+.overlay-icon {
+    font-size: 4rem;
     margin-bottom: 20px;
+}
+
+.overlay-screen h2 {
+    color: #202124;
+    margin-bottom: 10px;
+}
+
+.overlay-screen p {
+    color: #5f6368;
+    max-width: 500px;
 }
