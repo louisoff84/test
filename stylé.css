@@ -1,0 +1,124 @@
+/* --- Styles Généraux --- */
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    margin: 0;
+    background-color: #f4f4f9;
+    color: #333;
+}
+header {
+    background-color: #007bff;
+    color: white;
+    padding: 20px;
+    text-align: center;
+}
+.page {
+    padding: 30px;
+}
+/* --- Styles Login --- */
+#login-page {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+    background-color: #e9ecef;
+}
+.login-box {
+    background: white;
+    padding: 40px;
+    border-radius: 8px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+    width: 300px;
+    text-align: center;
+}
+#login-form input {
+    width: 100%;
+    padding: 10px;
+    margin: 10px 0;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    box-sizing: border-box;
+}
+#login-form button {
+    width: 100%;
+    background-color: #28a745;
+    color: white;
+    padding: 10px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    margin-top: 10px;
+}
+.error-message {
+    color: red;
+    margin-top: 10px;
+}
+/* --- Styles Admin Dashboard --- */
+#admin-page header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 30px;
+    background-color: #343a40;
+}
+#admin-page header h2 {
+    margin: 0;
+}
+.admin-section {
+    background: white;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 6px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+}
+.status-control {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 0;
+    border-bottom: 1px solid #eee;
+}
+.status-badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-weight: bold;
+    color: white;
+}
+.status-badge.on {
+    background-color: #dc3545; /* Rouge pour Maintenance */
+}
+.status-badge.off {
+    background-color: #28a745; /* Vert pour Opérationnel */
+}
+.account-control {
+    display: flex;
+    gap: 10px;
+    margin-top: 15px;
+}
+.account-control input {
+    flex-grow: 1;
+    padding: 8px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+}
+.info-message {
+    color: #007bff;
+    margin-top: 10px;
+}
+/* --- Styles Site Principal --- */
+#main-site {
+    padding: 30px;
+    text-align: center;
+}
+#maintenance-banner {
+    background-color: #ffc107;
+    color: #333;
+    padding: 15px;
+    border-radius: 5px;
+    margin: 20px 0;
+    font-size: 1.1em;
+}
+#search-section {
+    padding: 50px;
+    border: 1px dashed #ccc;
+    margin-bottom: 20px;
+}
