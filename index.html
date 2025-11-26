@@ -30,7 +30,7 @@
             box-shadow: 0 5px 15px rgba(0,0,0,0.3);
         }
         .modal-content h2 {
-            color: var(--accent-color);
+            color: var(--primary-color);
             margin-top: 0;
         }
         .modal-content .refresh-btn {
@@ -42,6 +42,8 @@
             cursor: pointer;
             font-size: 1em;
             margin-top: 15px;
+            display: block; 
+            width: 100%;
         }
     </style>
 </head>
@@ -51,8 +53,13 @@
       <div class="modal-content">
         <h2>🚀 Nouvelle Mise à Jour !</h2>
         <p>Une nouvelle version du site est disponible. Veuillez rafraîchir la page pour appliquer les changements.</p>
-        <button class="refresh-btn" onclick="window.location.reload(true)">
+        
+        <button class="refresh-btn" onclick="updateAndReload()">
             Cliquez ici pour Rafraîchir
+        </button>
+        
+        <button class="refresh-btn" style="background-color: #7f8c8d;" onclick="ignoreUpdate()">
+            Ignorer
         </button>
       </div>
     </div>
@@ -127,7 +134,7 @@
         // CONFIGURATION
         // ============================================
         
-        // --- CONFIGURATION GITHUB MISE À JOUR ---
+        // --- CONFIGURATION GITHUB ---
         const GITHUB_REPO_API_URL = 'https://api.github.com/repos/louisoff84/test/commits/main'; 
         const LAST_COMMIT_KEY = 'lastKnownCommitSha'; 
         // -------------------------------------
@@ -135,11 +142,11 @@
         // URL de l'API Groq (Commune aux deux IAs)
         const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
-        // 1. Configuration de l'IA de Recherche Générale
+        // 1. Configuration de l'IA de Recherche Générale (Clé: gsk_wEphXcRcDMzCaglsRT54...)
         const GENERAL_AI_API_KEY = "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"; 
         const GENERAL_AI_MODEL = "llama-3.1-8b-instant"; 
         
-        // 2. Configuration de l'IA du Site (Support)
+        // 2. Configuration de l'IA du Site (Support) (Clé: gsk_3QpXYSbwLGue4XypqBDpWGdyb3FY...)
         const SITE_AI_API_KEY = "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"; 
         const SITE_AI_MODEL = "mixtral-8x7b-instruct-v0.1"; 
         
@@ -150,7 +157,7 @@
         const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
 
         // ============================================
-        // 1. VÉRIFICATION D'ACCÈS ET STATUT
+        // 1. GESTION DE LA PAGE (Démarrage, Connexion, Statut)
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             checkSystemStatus();
@@ -222,27 +229,47 @@
         }
 
         // ============================================
-        // 2. FONCTION DE VÉRIFICATION GITHUB
+        // 2. GESTION DES MISES À JOUR GITHUB
         // ============================================
+
+        // Met à jour le SHA connu dans le localStorage et recharge la page pour appliquer la mise à jour
+        function updateAndReload() {
+            const modal = document.getElementById('update-modal');
+            const latestSha = modal.dataset.latestSha;
+            if (latestSha) {
+                localStorage.setItem(LAST_COMMIT_KEY, latestSha);
+            }
+            // window.location.reload(true) force un rechargement sans cache
+            window.location.reload(true); 
+        }
+
+        // Masque la pop-up et met à jour le SHA connu pour qu'elle ne réapparaisse pas immédiatement
+        function ignoreUpdate() {
+            const modal = document.getElementById('update-modal');
+            const latestSha = modal.dataset.latestSha;
+            if (latestSha) {
+                localStorage.setItem(LAST_COMMIT_KEY, latestSha);
+            }
+            modal.style.display = 'none';
+        }
+
+        // Vérifie l'API GitHub pour le dernier commit
         async function checkForNewCommit() {
             const currentSha = localStorage.getItem(LAST_COMMIT_KEY);
+            const modal = document.getElementById('update-modal');
 
             try {
                 const response = await fetch(GITHUB_REPO_API_URL, {
                     method: 'GET',
-                    // Utiliser l'entête 'Accept' pour s'assurer que l'on reçoit la bonne réponse JSON
                     headers: { 'Accept': 'application/vnd.github.v3+json' }
                 });
                 
                 if (!response.ok) {
-                    // Supprimez cette ligne en production si elle est trop bruyante
                     console.error('Erreur API GitHub:', response.statusText); 
                     return;
                 }
 
                 const data = await response.json();
-                
-                // Le SHA du dernier commit de la branche 'main' est directement dans l'objet réponse
                 const latestSha = data.sha; 
 
                 if (!latestSha) {
@@ -258,10 +285,9 @@
 
                 if (latestSha !== currentSha) {
                     // Nouvelle mise à jour détectée !
-                    document.getElementById('update-modal').style.display = 'block';
-                    // NOTE: Nous mettons à jour le SHA ici pour éviter que la popup s'affiche à chaque rafraîchissement
-                    // si l'utilisateur ignore la mise à jour (mais il devra quand même rafraîchir pour obtenir le code).
-                    // Pour forcer le rafraîchissement, on peut laisser le SHA non mis à jour.
+                    modal.style.display = 'block';
+                    // Stocke le SHA actuel de la mise à jour dans un attribut de données pour les fonctions de la modale
+                    modal.dataset.latestSha = latestSha;
                 }
 
             } catch (error) {
@@ -271,9 +297,10 @@
 
 
         // ============================================
-        // 3. FONCTIONS IA (Inchangées)
+        // 3. FONCTIONS IA
         // ============================================
         
+        // Recherche Générale avec GENERAL_AI_API_KEY
         async function performGeneralAiSearch() {
             const queryInput = document.getElementById('query-input');
             const query = queryInput.value.trim();
@@ -287,6 +314,7 @@
             await fetchAiResponse(GENERAL_AI_API_KEY, GENERAL_AI_MODEL, query, systemPrompt);
         }
 
+        // Support Site avec SITE_AI_API_KEY
         async function performSiteAiSearch() {
             const queryInput = document.getElementById('site-ai-query-input');
             const query = queryInput.value.trim();
@@ -299,6 +327,7 @@
             await fetchAiResponse(SITE_AI_API_KEY, SITE_AI_MODEL, query, systemPrompt);
         }
 
+        // Fonction utilitaire pour envoyer la requête à Groq
         async function fetchAiResponse(apiKey, model, query, systemPrompt) {
             const resultsArea = document.getElementById('results-area');
             const loading = document.getElementById('loading-indicator');
