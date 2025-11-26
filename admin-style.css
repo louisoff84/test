@@ -280,3 +280,53 @@ input:checked + .slider:before { transform: translateX(24px); }
 .btn-block { background-color: var(--danger-color); color: white; }
 .btn-unblock { background-color: var(--success-color); color: white; }
 .btn-delete { background-color: #6c757d; color: white; }
+/* =========================================
+   STYLES AJOUTÉS POUR LE MOBILE DANS admin-style.css
+   ========================================= */
+
+@media (max-width: 800px) {
+    /* 1. Layout Principal */
+    body:not(.login-body) {
+        flex-direction: column; /* La sidebar passe au-dessus du contenu */
+    }
+
+    /* 2. Barre Latérale devient Barre Supérieure */
+    .sidebar {
+        width: 100%; /* Prend toute la largeur */
+        height: auto;
+        flex-direction: row;
+        justify-content: space-between;
+        align-items: center;
+        padding: 10px 20px;
+    }
+    
+    .sidebar .brand { 
+        border-bottom: none; 
+        padding-bottom: 0;
+    }
+    
+    /* Cacher la navigation principale sur petit écran, ou la rendre compacte */
+    .sidebar nav {
+        display: none; /* Vous pouvez utiliser un bouton burger à la place si vous le souhaitez */
+    }
+    
+    .logout-area {
+        margin-top: 0;
+        padding-top: 0;
+    }
+    .btn-logout {
+        width: auto;
+        font-size: 0.8em;
+    }
+
+    /* 3. Contenu principal */
+    .main-content {
+        padding: 20px 15px;
+    }
+    
+    /* 4. Tableau de Bord */
+    .dashboard-grid {
+        grid-template-columns: 1fr; /* Les cartes s'empilent */
+    }
+}
+
