@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestion des Giveaways - OmniAdmin</title>
+    <link rel="stylesheet" href="admin-style.css">
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="brand">
+            <h3>⚙️ OmniAdmin</h3>
+        </div>
+        <nav>
+            <ul>
+                <li><a href="admin.html">Tableau de Bord</a></li> 
+                <li><a href="account_management.html">Gestion des Comptes</a></li>
+                <li class="active"><a href="shop_admin.html">Gestion des Giveaways</a></li>
+                <li><a href="#" style="opacity:0.5; cursor:not-allowed">Analytiques (Bientôt)</a></li>
+            </ul>
+        </nav>
+        <div class="logout-area">
+            <button onclick="logout()" class="btn-logout">Déconnexion</button>
+        </div>
+    </aside>
+
+    <main class="main-content">
+        <header>
+            <h1>Gestion des Giveaways</h1>
+        </header>
+
+        <div class="card" style="margin-bottom: 30px;">
+            <div class="card-header">
+                <h2>➕ Créer un Giveaway</h2>
+            </div>
+            <div class="card-body">
+                <form id="create-giveaway-form">
+                    <div class="form-group">
+                        <label for="ga-name">Nom du Prix (Ex: Licence Pro 1 an)</label>
+                        <input type="text" id="ga-name" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="ga-desc">Description</label>
+                        <textarea id="ga-desc" required></textarea>
+                    </div>
+                    <div class="form-group">
+                        <label for="ga-active">Activer immédiatement ?</label>
+                        <input type="checkbox" id="ga-active" checked>
+                    </div>
+                    <button type="submit" class="btn-primary" style="width: auto;">Ajouter le Giveaway</button>
+                </form>
+            </div>
+        </div>
+
+        <div class="card">
+            <div class="card-header">
+                <h2>🎁 Giveaways Actifs et Passés</h2>
+            </div>
+            <div class="card-body">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>Nom du Prix</th>
+                            <th>Participants</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="giveaway-list">
+                        </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // --- SÉCURITÉ ET CONSTANTES ---
+        if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('currentUserType') !== 'admin') {
+            window.location.href = 'login.html';
+        }
+
+        const GIVEAWAYS_KEY = 'GIVEAWAYS_DB';
+
+        document.addEventListener('DOMContentLoaded', renderGiveaways);
+        document.getElementById('create-giveaway-form').addEventListener('submit', createGiveaway);
+
+        function getGiveaways() {
+            return JSON.parse(localStorage.getItem(GIVEAWAYS_KEY) || '[]');
+        }
+
+        function saveGiveaways(giveaways) {
+            localStorage.setItem(GIVEAWAYS_KEY, JSON.stringify(giveaways));
+        }
+
+        function createGiveaway(e) {
+            e.preventDefault();
+            const name = document.getElementById('ga-name').value.trim();
+            const desc = document.getElementById('ga-desc').value.trim();
+            const active = document.getElementById('ga-active').checked;
+
+            if (!name || !desc) return alert("Veuillez remplir tous les champs.");
+
+            const newGiveaway = {
+                id: Date.now(), 
+                name: name,
+                description: desc,
+                active: active,
+                participants: []
+            };
+
+            const giveaways = getGiveaways();
+            giveaways.push(newGiveaway);
+            saveGiveaways(giveaways);
+
+            alert(`Giveaway "${name}" créé avec succès.`);
+            document.getElementById('create-giveaway-form').reset();
+            renderGiveaways();
+        }
+
+        function renderGiveaways() {
+            const giveaways = getGiveaways();
+            const list = document.getElementById('giveaway-list');
+            list.innerHTML = '';
+
+            if (giveaways.length === 0) {
+                list.innerHTML = '<tr><td colspan="4" style="text-align:center;">Aucun giveaway créé.</td></tr>';
+                return;
+            }
+
+            giveaways.forEach(ga => {
+                const isActive = ga.active;
+                const row = list.insertRow();
+                row.innerHTML = `
+                    <td>${ga.name}</td>
+                    <td>${ga.participants.length}</td>
+                    <td><span class="account-status ${isActive ? 'status-active' : 'status-blocked'}">${isActive ? 'ACTIF' : 'INACTIF'}</span></td>
+                    <td>
+                        <button class="action-btn btn-edit" onclick="toggleActive(${ga.id})">
+                            ${isActive ? 'Désactiver' : 'Activer'}
+                        </button>
+                        <button class="action-btn btn-delete" onclick="deleteGiveaway(${ga.id})">Supprimer</button>
+                        <button class="action-btn btn-secondary" onclick="drawWinner(${ga.id})" ${!isActive || ga.participants.length === 0 ? 'disabled' : ''}>Tirer au sort</button>
+                    </td>
+                `;
+            });
+        }
+
+        function toggleActive(id) {
+            const giveaways = getGiveaways();
+            const ga = giveaways.find(g => g.id === id);
+            if (ga) {
+                ga.active = !ga.active;
+                saveGiveaways(giveaways);
+                renderGiveaways();
+            }
+        }
+        
+        function drawWinner(id) {
+            const giveaways = getGiveaways();
+            const ga = giveaways.find(g => g.id === id);
+            
+            if (!ga || ga.participants.length === 0) return alert("Pas assez de participants.");
+            
+            const winnerIndex = Math.floor(Math.random() * ga.participants.length);
+            const winner = ga.participants[winnerIndex];
+            
+            alert(`🎉 LE GAGNANT DU PRIX "${ga.name}" EST : ${winner} !`);
+            
+            ga.active = false;
+            saveGiveaways(giveaways);
+            renderGiveaways();
+        }
+
+        function deleteGiveaway(id) {
+            if (!confirm("Êtes-vous sûr de vouloir supprimer ce giveaway ?")) return;
+            let giveaways = getGiveaways();
+            giveaways = giveaways.filter(g => g.id !== id);
+            saveGiveaways(giveaways);
+            renderGiveaways();
+        }
+
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('currentUserType');
+            window.location.href = 'login.html';
+        }
+    </script>
+</body>
+</html>
