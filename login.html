@@ -3,62 +3,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Connexion Admin - OmniSearch</title>
+    <title>Gestion des Comptes Utilisateurs</title>
     <link rel="stylesheet" href="admin-style.css">
 </head>
-<body class="login-body">
+<body>
 
-    <div class="login-card">
-        <div class="login-header">
-            <h2>🔐 Accès Sécurisé</h2>
-            <p>Veuillez vous identifier pour accéder au panel.</p>
+    <aside class="sidebar">
+        <div class="brand"><h3>⚙️ OmniAdmin</h3></div>
+        <nav>
+            <ul>
+                <li><a href="admin.html">Tableau de Bord</a></li>
+                <li class="active"><a href="account_management.html">Gestion des Comptes</a></li>
+                <li><a href="#" style="opacity:0.5; cursor:not-allowed">Analytiques (Bientôt)</a></li>
+            </ul>
+        </nav>
+        <div class="logout-area">
+            <button onclick="logout()" class="btn-logout">Déconnexion</button>
         </div>
-        
-        <form id="login-form">
-            <div class="form-group">
-                <label for="username">Identifiant</label>
-                <input type="text" id="username" placeholder="ex: admin" required>
-            </div>
+    </aside>
 
-            <div class="form-group">
-                <label for="password">Mot de passe</label>
-                <input type="password" id="password" placeholder="••••••••" required>
-            </div>
+    <main class="main-content">
+        <header>
+            <h1>Gestion des Comptes Utilisateurs</h1>
+            <a href="index.html" target="_blank" class="view-site-link">Voir le site en direct ↗</a>
+        </header>
 
-            <button type="submit" class="btn-primary">Se Connecter</button>
+        <section class="admin-section">
+            <h3>Liste des Utilisateurs Enregistrés (Simulée)</h3>
             
-            <p id="error-msg" class="error-text"></p>
-        </form>
-        
-        <div class="login-footer">
-            <a href="index.html">← Retour au site</a>
-        </div>
-    </div>
+            <div class="search-controls">
+                <input type="text" id="search-input" placeholder="Rechercher par pseudo ou email..." onkeyup="filterUsers()">
+                <select id="status-filter" onchange="filterUsers()">
+                    <option value="all">Tous les Statuts</option>
+                    <option value="active">Actif</option>
+                    <option value="blocked">Bloqué</option>
+                </select>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Pseudo</th>
+                            <th>Email</th>
+                            <th>Statut</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="user-table-body">
+                        </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
 
     <script>
-        // --- LOGIQUE DE CONNEXION ---
-        const ADMIN_USER = "admin";
-        const ADMIN_PASS = "1234"; // À changer pour la sécurité !
+        // --- VÉRIFICATION DE SÉCURITÉ ET CONSTANTES ---
+        if (localStorage.getItem('isLoggedIn') !== 'true') {
+            window.location.href = 'login.html';
+        }
+        
+        const STORAGE_BLOCKED_USERS = 'blockedUsers';
 
-        document.getElementById('login-form').addEventListener('submit', function(e) {
-            e.preventDefault();
+        // Base de données simulée des utilisateurs (à remplacer par un vrai Backend !)
+        let USERS_DB = JSON.parse(localStorage.getItem('USERS_DB') || '[]');
+        if (USERS_DB.length === 0) {
+            USERS_DB = [
+                { id: 1, pseudo: 'user_alpha', email: 'alpha@test.com', status: 'active' },
+                { id: 2, pseudo: 'guest_beta', email: 'beta@test.com', status: 'active' },
+                { id: 3, pseudo: 'blocked_user', email: 'blocked@test.com', status: 'blocked' },
+                { id: 4, pseudo: 'test_user_z', email: 'test@test.com', status: 'active' },
+            ];
+            // Sauvegarder pour la simulation
+            localStorage.setItem('USERS_DB', JSON.stringify(USERS_DB));
+        }
+
+        // --- FONCTIONS DE GESTION ---
+
+        function saveUsers() {
+            localStorage.setItem('USERS_DB', JSON.stringify(USERS_DB));
+        }
+
+        function getUserStatusClass(status) {
+            return status === 'active' ? 'status-active' : (status === 'blocked' ? 'status-blocked' : 'status-pending');
+        }
+        
+        function renderTable(users) {
+            const tbody = document.getElementById('user-table-body');
+            tbody.innerHTML = '';
             
-            const user = document.getElementById('username').value;
-            const pass = document.getElementById('password').value;
-            const errorMsg = document.getElementById('error-msg');
+            users.forEach(user => {
+                const tr = tbody.insertRow();
+                tr.innerHTML = `
+                    <td>${user.id}</td>
+                    <td>${user.pseudo}</td>
+                    <td>${user.email}</td>
+                    <td><span class="account-status ${getUserStatusClass(user.status)}">${user.status.toUpperCase()}</span></td>
+                    <td>
+                        ${user.status === 'active' ? 
+                            `<button class="action-btn btn-block" onclick="blockUser(${user.id}, '${user.pseudo}')">Bloquer</button>` : 
+                            `<button class="action-btn btn-unblock" onclick="unblockUser(${user.id}, '${user.pseudo}')">Débloquer</button>`
+                        }
+                        <button class="action-btn btn-edit" onclick="alert('Édition de ${user.pseudo} non implémentée.')">Éditer</button>
+                        <button class="action-btn btn-delete" onclick="deleteUser(${user.id})">Supprimer</button>
+                    </td>
+                `;
+            });
+        }
+        
+        function filterUsers() {
+            const searchInput = document.getElementById('search-input').value.toLowerCase();
+            const statusFilter = document.getElementById('status-filter').value;
+            
+            let filtered = USERS_DB;
 
-            if (user === ADMIN_USER && pass === ADMIN_PASS) {
-                // Succès : On enregistre le token dans le stockage local
-                localStorage.setItem('isLoggedIn', 'true');
-                window.location.href = 'admin.html';
-            } else {
-                // Échec
-                errorMsg.textContent = "Identifiant ou mot de passe incorrect.";
-                // Petite animation de secousse (optionnel via CSS)
-                document.querySelector('.login-card').style.animation = "shake 0.3s";
-                setTimeout(() => document.querySelector('.login-card').style.animation = "", 300);
+            if (statusFilter !== 'all') {
+                filtered = filtered.filter(user => user.status === statusFilter);
             }
-        });
+
+            if (searchInput) {
+                filtered = filtered.filter(user => 
+                    user.pseudo.toLowerCase().includes(searchInput) ||
+                    user.email.toLowerCase().includes(searchInput)
+                );
+            }
+
+            renderTable(filtered);
+        }
+
+        // Action : Bloquer un utilisateur (met à jour la DB locale et la liste noire)
+        function blockUser(userId, pseudo) {
+            const userIndex = USERS_DB.findIndex(u => u.id === userId);
+            if (userIndex !== -1) {
+                USERS_DB[userIndex].status = 'blocked';
+                saveUsers();
+                
+                // Mettre à jour la liste noire (pour le blocage dans index.html)
+                let blockedList = JSON.parse(localStorage.getItem(STORAGE_BLOCKED_USERS) || '[]');
+                if (!blockedList.includes(pseudo)) {
+                    blockedList.push(pseudo);
+                    localStorage.setItem(STORAGE_BLOCKED_USERS, JSON.stringify(blockedList));
+                }
+                
+                filterUsers();
+            }
+        }
+
+        // Action : Débloquer un utilisateur
+        function unblockUser(userId, pseudo) {
+             const userIndex = USERS_DB.findIndex(u => u.id === userId);
+            if (userIndex !== -1) {
+                USERS_DB[userIndex].status = 'active';
+                saveUsers();
+                
+                // Retirer de la liste noire
+                let blockedList = JSON.parse(localStorage.getItem(STORAGE_BLOCKED_USERS) || '[]');
+                blockedList = blockedList.filter(u => u !== pseudo);
+                localStorage.setItem(STORAGE_BLOCKED_USERS, JSON.stringify(blockedList));
+                
+                filterUsers();
+            }
+        }
+        
+        // Action : Supprimer un utilisateur (simulation)
+        function deleteUser(userId) {
+            if (confirm(`Voulez-vous vraiment supprimer l'utilisateur ID ${userId}?`)) {
+                USERS_DB = USERS_DB.filter(user => user.id !== userId);
+                saveUsers();
+                filterUsers();
+            }
+        }
+
+        // Action : Déconnexion
+        function logout() {
+            localStorage.removeItem('isLoggedIn');
+            window.location.href = 'login.html';
+        }
+
+
+        // --- INITIALISATION ---
+        filterUsers(); 
     </script>
 </body>
 </html>
