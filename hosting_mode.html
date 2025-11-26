@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode Hébergement 🌐 - OmniSearch AI</title>
+    <link rel="stylesheet" href="css-public.css"> 
+    <style>
+        .hosting-container { 
+            background-color: #f7f7f7; 
+            min-height: 100vh;
+            padding: 50px 20px;
+            text-align: center;
+        }
+        .hosting-card {
+            background: var(--card-bg); 
+            border: 1px solid #ddd; 
+            border-radius: 10px; 
+            padding: 30px; 
+            max-width: 600px; 
+            margin: 30px auto; 
+            box-shadow: var(--shadow);
+            text-align: left;
+        }
+        .hosting-card h2 {
+            color: var(--accent-color);
+            margin-bottom: 20px;
+        }
+        .hosting-card label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .hosting-card input[type="text"] {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin-bottom: 20px;
+            font-size: 1em;
+        }
+        .hosting-card .btn-primary {
+            width: 100%;
+        }
+    </style>
+</head>
+<body class="hosting-container">
+
+    <header>
+        <nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
+            <a href="index.html" style="text-decoration: none;">← Retour à l'accueil</a>
+            <span id="user-info-hosting"></span>
+            <a href="#" onclick="logout()" style="color: var(--danger-color);">Déconnexion</a>
+        </nav>
+    </header>
+
+    <main class="hosting-card">
+        <h2>Générateur de Fichier HTML Simple</h2>
+        <p style="margin-bottom: 30px; color: #7f8c8d;">
+            Créez un fichier HTML de base, automatiquement lié à votre feuille de style `css-public.css`. 
+            Ceci est parfait pour démarrer un nouveau projet local.
+        </p>
+
+        <label for="site-name-input">Nom du Site (sera le nom du fichier)</label>
+        <input type="text" id="site-name-input" placeholder="Ex: mon-nouveau-site" required>
+
+        <button class="btn-primary" onclick="generateAndDownload()">Générer et Télécharger le Fichier HTML</button>
+        
+        <p id="status-message" style="margin-top: 20px; text-align: center; color: var(--success-color); font-weight: bold; display: none;">✅ Fichier généré avec succès !</p>
+    </main>
+    
+    <script>
+        const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
+        const STORAGE_CURRENT_USER = 'currentUser';
+        
+        document.addEventListener('DOMContentLoaded', () => {
+            checkAccess();
+        });
+
+        function checkAccess() {
+            const isLoggedIn = localStorage.getItem(STORAGE_IS_LOGGED_IN) === 'true';
+            const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
+
+            if (!isLoggedIn) {
+                alert("Accès refusé. Veuillez vous connecter.");
+                window.location.href = 'login.html';
+                return;
+            }
+
+            document.getElementById('user-info-hosting').textContent = `Connecté: ${currentUser}`;
+        }
+
+        function logout() {
+            localStorage.removeItem(STORAGE_IS_LOGGED_IN);
+            localStorage.removeItem(STORAGE_CURRENT_USER);
+            window.location.href = 'index.html';
+        }
+
+        // --- FONCTION PRINCIPALE DE GÉNÉRATION ---
+        function generateAndDownload() {
+            const nameInput = document.getElementById('site-name-input');
+            const statusMsg = document.getElementById('status-message');
+            let baseName = nameInput.value.trim();
+
+            statusMsg.style.display = 'none';
+
+            if (!baseName) {
+                alert("Veuillez donner un nom à votre site.");
+                return;
+            }
+            
+            // Assure que le nom de fichier est propre (sans espaces, sans caractères spéciaux)
+            baseName = baseName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+
+            const fileName = `${baseName}.html`;
+            const pageTitle = baseName.replace(/-/g, ' ').toUpperCase();
+
+            // --- CONTENU DU FICHIER HTML ---
+            const htmlContent = `<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>${pageTitle}</title>
+    
+    <link rel="stylesheet" href="css-public.css"> 
+    
+    <style>
+        /* Ajoutez vos styles spécifiques ici si besoin */
+        #content-wrapper {
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 30px;
+            background-color: white;
+            border-radius: 8px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            text-align: center;
+        }
+        h1 { color: var(--accent-color); }
+    </style>
+</head>
+<body>
+    <div id="content-wrapper">
+        <h1>Bienvenue sur ${pageTitle}</h1>
+        <p>Ceci est un site simple, hébergé localement, utilisant le style de base d'OmniSearch (fichier css-public.css).</p>
+        <p>Pour voir le style, assurez-vous que 'css-public.css' se trouve dans le même dossier que ce fichier.</p>
+        <button style="padding: 10px 20px; background-color: var(--success-color); color: white; border: none; border-radius: 5px; margin-top: 15px;">Bouton Test Style</button>
+    </div>
+</body>
+</html>`;
+            
+            // --- CRÉATION DU BLOB ET TÉLÉCHARGEMENT ---
+            const blob = new Blob([htmlContent], { type: 'text/html' });
+            const a = document.createElement('a');
+            a.href = URL.createObjectURL(blob);
+            a.download = fileName;
+            
+            // Simule un clic pour démarrer le téléchargement
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            
+            statusMsg.textContent = `✅ Fichier ${fileName} généré et téléchargé avec succès !`;
+            statusMsg.style.display = 'block';
+
+            // Réinitialiser le champ
+            nameInput.value = '';
+        }
+    </script>
+</body>
+</html>
