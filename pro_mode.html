@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mode Pro 💼 - OmniSearch AI</title>
+    <link rel="stylesheet" href="css-public.css"> 
+    <style>
+        .pro-container { 
+            background-color: #e8f4f8; 
+            color: #34495e; 
+            min-height: 100vh;
+            padding: 50px 20px;
+        }
+        .pro-container h1 { color: #3498db; }
+        .pro-search-container { 
+            background: #fff; 
+            border: 2px solid #3498db; 
+            border-radius: 10px; 
+            padding: 30px; 
+            max-width: 800px; 
+            margin: 30px auto; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+        }
+        .pro-search-container .search-container {
+            box-shadow: none;
+        }
+        .pro-response { 
+            background: #f0f7ff; 
+            color: #34495e; 
+            border-left: 5px solid #3498db; 
+            padding: 15px; 
+            margin-top: 20px; 
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+<body class="pro-container">
+
+    <header>
+        <nav style="display: flex; justify-content: space-between; align-items: center; background: #3498db; padding: 10px 0; color: white;">
+            <a href="index.html" style="color: white; text-decoration: none; margin-left: 20px;">← Retour à l'accueil</a>
+            <span id="user-info-pro"></span>
+            <a href="#" onclick="logout()" style="color: #fff; margin-right: 20px;">Déconnexion</a>
+        </nav>
+    </header>
+
+    <main class="pro-search-container">
+        <h1>Mode Pro 💼</h1>
+        <p style="margin-bottom: 20px;">Réponses longues, détaillées, et formatées pour les besoins professionnels (rapports, études de cas, code).</p>
+
+        <div class="search-container">
+            <input type="text" id="query-input" placeholder="Requête professionnelle ou détaillée...">
+            <button class="search-btn" onclick="performProSearch()">Générer</button>
+        </div>
+        
+        <div id="loading-indicator" style="display: none; color: #3498db; margin-top: 15px;">Rédaction de la réponse détaillée...</div>
+        <div id="ai-response" class="pro-response" style="display: none;"></div>
+    </main>
+    
+    <script>
+        const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
+        const STORAGE_CURRENT_USER = 'currentUser';
+        
+        // Vérification de connexion
+        if (localStorage.getItem(STORAGE_IS_LOGGED_IN) !== 'true') {
+            alert("Accès refusé. Veuillez vous connecter.");
+            window.location.href = 'login.html';
+        }
+        
+        document.getElementById('user-info-pro').textContent = `Connecté: ${localStorage.getItem(STORAGE_CURRENT_USER)} | Statut Pro`;
+
+        function logout() {
+            localStorage.removeItem(STORAGE_IS_LOGGED_IN);
+            localStorage.removeItem(STORAGE_CURRENT_USER);
+            window.location.href = 'index.html';
+        }
+
+        async function performProSearch() {
+            const query = document.getElementById('query-input').value.trim();
+            const loading = document.getElementById('loading-indicator');
+            const responseDiv = document.getElementById('ai-response');
+
+            if (!query) return alert("Veuillez entrer une requête détaillée.");
+
+            responseDiv.style.display = 'none';
+            loading.style.display = 'block';
+            
+            // Simulation de la réponse Pro
+            await new Promise(resolve => setTimeout(resolve, 3000)); 
+
+            const simulatedResponse = `Analyse professionnelle pour : "${query}"\n\n## 📋 Rapport Détaillé\n\n- **Contexte :** Le mode Pro permet des réponses plus longues et structurées, simulant l'utilisation d'un modèle IA plus puissant (ex: LLama 3.1 70B).\n- **Réponse :** Génération d'un contenu plus long, structuré en Markdown, idéal pour les rapports.\n- **Avantage :** Vitesse et profondeur d'analyse optimisées pour les requêtes complexes.\n\n_Ceci est une réponse simulée en mode Pro._`;
+
+            loading.style.display = 'none';
+            responseDiv.textContent = simulatedResponse;
+            responseDiv.style.display = 'block';
+        }
+    </script>
+</body>
+</html>
