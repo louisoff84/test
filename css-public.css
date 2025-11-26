@@ -1,0 +1,249 @@
+/* =========================================
+   VARIABLES ET BASE
+   ========================================= */
+:root {
+    --primary-text: #2c3e50;    /* Bleu/Gris foncé pour le texte principal */
+    --accent-color: #3498db;     /* Bleu vif pour les boutons et accents */
+    --bg-color: #f4f6f9;         /* Fond principal très clair */
+    --card-bg: #ffffff;          /* Fond des cartes de réponse */
+    --danger-color: #e74c3c;     /* Rouge pour les messages d'erreur */
+    --success-color: #2ecc71;    /* Vert pour les succès */
+    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+}
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--primary-text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* =========================================
+   LAYOUT GÉNÉRAL (index.html)
+   ========================================= */
+#main-content {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px;
+    padding-top: 50px;
+}
+
+header {
+    display: flex;
+    justify-content: flex-end;
+    align-items: center;
+    padding-bottom: 20px;
+}
+
+header a {
+    color: var(--accent-color);
+    text-decoration: none;
+    font-weight: 500;
+    margin-left: 15px;
+    transition: color 0.2s;
+}
+
+header a:hover {
+    color: #2980b9;
+}
+
+main {
+    text-align: center;
+}
+
+main h1 {
+    font-size: 3em;
+    color: var(--primary-text);
+    margin-bottom: 5px;
+}
+
+.subtitle {
+    color: #7f8c8d;
+    margin-bottom: 40px;
+}
+
+/* --- Navigation des Modes --- */
+.mode-nav {
+    display: flex;
+    justify-content: center;
+    gap: 15px;
+    margin-top: 20px;
+    margin-bottom: 40px;
+}
+
+.mode-nav a {
+    text-decoration: none;
+    color: var(--primary-text);
+    padding: 10px 20px;
+    border-radius: 25px;
+    border: 1px solid #bdc3c7;
+    transition: all 0.3s;
+    font-weight: 600;
+}
+
+.mode-nav a:hover,
+.mode-nav a[style*="background-color: rgb(52, 152, 219)"] { /* Sélectionne le mode actif */
+    background-color: var(--accent-color) !important;
+    color: white !important;
+    border-color: var(--accent-color) !important;
+}
+
+
+/* =========================================
+   BARRE DE RECHERCHE
+   ========================================= */
+.search-container {
+    display: flex;
+    max-width: 650px;
+    margin: 0 auto;
+    background: var(--card-bg);
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    overflow: hidden;
+    height: 55px;
+}
+
+#query-input {
+    flex-grow: 1;
+    border: none;
+    padding: 0 20px;
+    font-size: 1.1em;
+    outline: none;
+}
+
+#language-select {
+    padding: 0 10px;
+    border: none;
+    border-left: 1px solid #ecf0f1;
+    background: #f8f9fa;
+    outline: none;
+    cursor: pointer;
+}
+
+.search-btn {
+    background-color: var(--accent-color);
+    color: white;
+    border: none;
+    padding: 0 25px;
+    font-size: 1em;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.search-btn:hover {
+    background-color: #2980b9;
+}
+
+/* =========================================
+   RÉSULTATS ET STATUT
+   ========================================= */
+#results-area {
+    margin-top: 40px;
+    text-align: left;
+}
+
+#loading-indicator {
+    color: var(--accent-color);
+    font-style: italic;
+    margin-top: 20px;
+    padding: 15px;
+    border: 1px dashed var(--accent-color);
+    border-radius: 5px;
+    text-align: center;
+}
+
+#status-message {
+    padding: 15px;
+    border-radius: 5px;
+    margin-top: 20px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#status-message.error {
+    background-color: #f8d7da;
+    color: var(--danger-color);
+    border: 1px solid var(--danger-color);
+}
+
+.ai-card {
+    background: var(--card-bg);
+    padding: 25px;
+    border-radius: 10px;
+    box-shadow: var(--shadow);
+    margin-top: 20px;
+    white-space: pre-wrap; /* Permet un bon affichage du texte brut de l'IA */
+}
+
+
+/* =========================================
+   ÉCRANS DE BLOCAGE/MAINTENANCE (Overlays)
+   ========================================= */
+.overlay-screen {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: #fefefe; 
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    z-index: 1000;
+}
+
+.overlay-icon {
+    font-size: 4em;
+    margin-bottom: 20px;
+}
+
+.overlay-screen h2 {
+    color: var(--danger-color);
+    font-size: 2em;
+    margin-bottom: 15px;
+}
+
+.overlay-screen p {
+    color: #7f8c8d;
+    max-width: 400px;
+    font-size: 1.1em;
+}
+
+/* =========================================
+   RESPONSIVE
+   ========================================= */
+@media (max-width: 768px) {
+    #main-content {
+        padding: 10px;
+        padding-top: 30px;
+    }
+    main h1 {
+        font-size: 2em;
+    }
+    .search-container {
+        flex-direction: column;
+        height: auto;
+        border-radius: 8px;
+    }
+    #query-input, .search-btn, #language-select {
+        width: 100%;
+        padding: 15px 20px;
+    }
+    #language-select {
+        border-left: none;
+        border-top: 1px solid #ecf0f1;
+    }
+    .mode-nav {
+        flex-direction: column;
+        gap: 10px;
+    }
+}
