@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OmniSearch AI - Recherche de Livres & Savoir</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div id="blocked-screen" class="overlay-screen" style="display: none;">
+        <div class="overlay-icon">⛔</div>
+        <h2>Accès Refusé</h2>
+        <p>Votre compte ou votre adresse IP a été bloqué par l'administrateur.</p>
+    </div>
+
+    <div id="maintenance-screen" class="overlay-screen" style="display: none;">
+        <div class="overlay-icon">🚧</div>
+        <h2>Site en Maintenance</h2>
+        <p>Nous effectuons actuellement des mises à jour. Le site sera de retour très bientôt.</p>
+        <br>
+        <a href="login.html" style="color:#4285f4;">Accès Admin</a>
+    </div>
+
+    <div id="main-content">
+        <header>
+            <a href="login.html" class="admin-link">Connexion Admin</a>
+        </header>
+
+        <main>
+            <h1>OmniSearch AI 🧠</h1>
+            <p class="subtitle">Explorez les livres, les films et le savoir mondial grâce à l'IA.</p>
+
+            <div class="search-container">
+                <input type="text" id="query-input" placeholder="Posez votre question... (ex: Résumé de 1984)">
+                
+                <select id="language-select">
+                    <option value="fr" selected>FR</option>
+                    <option value="en">EN</option>
+                    <option value="es">ES</option>
+                    <option value="de">DE</option>
+                </select>
+
+                <button class="search-btn" onclick="performGroqSearch()">Rechercher</button>
+            </div>
+
+            <div id="status-message" style="display: none; margin-top: 15px;"></div>
+
+            <div id="results-area" style="display: none;">
+                <div id="loading-indicator" class="loading" style="display: none;">
+                    L'IA réfléchit et rédige votre réponse... 🤖
+                </div>
+                <div id="ai-response" class="ai-card" style="display: none;">
+                    </div>
+            </div>
+        </main>
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        
+        // ⚠️ REMPLACEZ CECI PAR VOTRE CLÉ API GROQ ⚠️
+        const GROQ_API_KEY = "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"; 
+        
+        const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+        
+        // NOUVEAU MODÈLE DEMANDÉ
+        const GROQ_MODEL = "llama-3.3-70b-versatile"; 
+        
+        // Clés de stockage (DOIVENT CORRESPONDRE À ADMIN.HTML)
+        const STORAGE_MAINTENANCE_SITE = 'siteMaintenance';
+        const STORAGE_MAINTENANCE_IA = 'iaMaintenance';
+        const STORAGE_BLOCKED_USERS = 'blockedUsers';
+
+        // ============================================
+        // 1. VÉRIFICATION D'ACCÈS (Au chargement)
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            checkSystemStatus();
+            
+            // Permet de lancer la recherche avec la touche "Entrée"
+            document.getElementById('query-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    performGroqSearch();
+                }
+            });
+        });
+
+        function checkSystemStatus() {
+            // 1. Vérifier si l'utilisateur est bloqué (Simulation pseudo)
+            const currentUser = localStorage.getItem('currentUser') || 'anonyme'; 
+            const blockedUsers = JSON.parse(localStorage.getItem(STORAGE_BLOCKED_USERS) || '[]');
+            
+            if (blockedUsers.includes(currentUser)) {
+                document.getElementById('blocked-screen').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'none';
+                return; // On arrête tout
+            }
+
+            // 2. Vérifier la Maintenance du Site Global
+            const siteMaint = localStorage.getItem(STORAGE_MAINTENANCE_SITE) === 'true';
+            
+            if (siteMaint) {
+                document.getElementById('maintenance-screen').style.display = 'flex';
+                document.getElementById('main-content').style.display = 'none';
+            }
+        }
+
+        // ============================================
+        // 2. FONCTION DE RECHERCHE (GROQ API)
+        // ============================================
+        async function performGroqSearch() {
+            const queryInput = document.getElementById('query-input');
+            const query = queryInput.value.trim();
+            const lang = document.getElementById('language-select').value;
+            const resultsArea = document.getElementById('results-area');
+            const loading = document.getElementById('loading-indicator');
+            const responseDiv = document.getElementById('ai-response');
+            const statusMsg = document.getElementById('status-message');
+
+            // Reset UI
+            statusMsg.style.display = 'none';
+            responseDiv.style.display = 'none';
+            responseDiv.textContent = '';
+            
+            // 1. Validation de base
+            if (!query) {
+                alert("Veuillez écrire quelque chose !");
+                return;
+            }
+
+            // 2. Vérification Maintenance IA (Spécifique à la recherche)
+            const iaMaint = localStorage.getItem(STORAGE_MAINTENANCE_IA) === 'true';
+            if (iaMaint) {
+                statusMsg.textContent = "⚠️ La recherche IA est temporairement en maintenance. Revenez plus tard.";
+                statusMsg.className = "error";
+                statusMsg.style.display = 'block';
+                return;
+            }
+
+            // 3. Vérification Clé API
+            if (GROQ_API_KEY === "VOTRE_CLE_API_GROQ_ICI" || !GROQ_API_KEY) {
+                statusMsg.textContent = "Erreur Configuration : Clé API manquante dans le code.";
+                statusMsg.className = "error";
+                statusMsg.style.display = 'block';
+                return;
+            }
+
+            // 4. Lancement de la requête
+            resultsArea.style.display = 'block';
+            loading.style.display = 'block';
+
+            // Prompt Système pour guider l'IA
+            const systemPrompt = `Tu es un assistant expert en livres, films, culture et savoir général. 
+            Réponds à la question de manière structurée, claire et utile. 
+            Réponds obligatoirement dans la langue : ${lang}.
+            Si la question porte sur un livre, donne le titre, l'auteur, l'année et un résumé.`;
+
+            try {
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: GROQ_MODEL, // Utilisation du nouveau modèle ici
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1024
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                // Affichage du résultat
+                const aiText = data.choices[0].message.content;
+                loading.style.display = 'none';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = aiText;
+
+            } catch (error) {
+                loading.style.display = 'none';
+                statusMsg.textContent = `Erreur IA : ${error.message}`;
+                statusMsg.className = "error";
+                statusMsg.style.display = 'block';
+                console.error(error);
+            }
+        }
+    </script>
+</body>
+</html>
