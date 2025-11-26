@@ -47,9 +47,7 @@
     </div>
 
     <script>
-        // Clé de stockage pour la DB Utilisateurs
         const USERS_DB_KEY = 'REGULAR_USERS';
-        // Clé de stockage pour le message de succès post-inscription
         const SUCCESS_MSG_KEY = 'registrationSuccess';
 
         document.getElementById('register-form').addEventListener('submit', function(e) {
@@ -60,16 +58,20 @@
             const password = document.getElementById('reg-password').value;
             const passwordConfirm = document.getElementById('reg-password-confirm').value;
             const errorMsg = document.getElementById('error-msg');
+            const ADMIN_USER = "admin"; // Empêche l'enregistrement du nom "admin"
 
             errorMsg.textContent = "";
+            
+            if (username.toLowerCase() === ADMIN_USER) {
+                errorMsg.textContent = "Ce nom d'utilisateur n'est pas autorisé.";
+                return;
+            }
 
-            // 1. Validation du mot de passe
             if (password !== passwordConfirm) {
                 errorMsg.textContent = "Les mots de passe ne correspondent pas.";
                 return;
             }
 
-            // 2. Récupérer et vérifier les utilisateurs existants
             let regularUsers = JSON.parse(localStorage.getItem(USERS_DB_KEY) || '[]');
             
             const userExists = regularUsers.some(u => u.user === username || u.email === email);
@@ -79,7 +81,6 @@
                 return;
             }
 
-            // 3. Créer le nouveau compte
             const newUser = {
                 user: username,
                 pass: password, // En environnement réel, ceci devrait être HACHÉ !
@@ -88,10 +89,8 @@
             
             regularUsers.push(newUser);
             
-            // 4. Sauvegarder la nouvelle base de données
             localStorage.setItem(USERS_DB_KEY, JSON.stringify(regularUsers));
 
-            // 5. Enregistrer le flag de succès et rediriger
             localStorage.setItem(SUCCESS_MSG_KEY, 'true');
             alert(`Compte ${username} créé avec succès. Redirection vers la page de connexion...`);
             window.location.href = 'login.html';
