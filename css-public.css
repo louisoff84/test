@@ -1,249 +1,284 @@
-/* =========================================
-   VARIABLES ET BASE
-   ========================================= */
+/* =======================================================
+   Variables et Réinitialisation de Base
+   ======================================================= */
 :root {
-    --primary-text: #2c3e50;    /* Bleu/Gris foncé pour le texte principal */
-    --accent-color: #3498db;     /* Bleu vif pour les boutons et accents */
-    --bg-color: #f4f6f9;         /* Fond principal très clair */
-    --card-bg: #ffffff;          /* Fond des cartes de réponse */
-    --danger-color: #e74c3c;     /* Rouge pour les messages d'erreur */
-    --success-color: #2ecc71;    /* Vert pour les succès */
-    --shadow: 0 4px 12px rgba(0,0,0,0.08);
+    /* Couleurs Primaires */
+    --primary-color: #3498db; /* Bleu standard */
+    --accent-color: #2ecc71;  /* Vert pour Groq / Succès */
+    --secondary-color: #e67e22; /* Orange pour Site AI / Alerte */
+    --danger-color: #e74c3c; /* Rouge pour Erreurs / Suppression */
+    --text-color: #34495e; /* Texte sombre principal */
+    --text-light: #7f8c8d; /* Texte secondaire / sous-titre */
+    
+    /* Fonds */
+    --body-bg: #f4f7f9; /* Fond général très clair */
+    --card-bg: #ffffff; /* Fond des cartes et éléments principaux */
+    --input-bg: #ecf0f1; /* Fond des champs de saisie */
+    
+    /* Ombres */
+    --shadow: 0 4px 10px rgba(0, 0, 0, 0.05);
 }
 
 * {
     box-sizing: border-box;
     margin: 0;
     padding: 0;
+    font-family: Arial, sans-serif;
 }
 
 body {
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background-color: var(--bg-color);
-    color: var(--primary-text);
+    background-color: var(--body-bg);
+    color: var(--text-color);
     line-height: 1.6;
-    min-height: 100vh;
 }
 
-/* =========================================
-   LAYOUT GÉNÉRAL (index.html)
-   ========================================= */
-#main-content {
-    max-width: 900px;
-    margin: 0 auto;
-    padding: 20px;
-    padding-top: 50px;
-}
+/* =======================================================
+   Layout et Entête
+   ======================================================= */
 
 header {
-    display: flex;
-    justify-content: flex-end;
-    align-items: center;
-    padding-bottom: 20px;
-}
-
-header a {
-    color: var(--accent-color);
-    text-decoration: none;
-    font-weight: 500;
-    margin-left: 15px;
-    transition: color 0.2s;
-}
-
-header a:hover {
-    color: #2980b9;
+    padding: 15px;
+    background-color: var(--card-bg);
+    border-bottom: 1px solid #ddd;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 }
 
 main {
+    max-width: 800px;
+    margin: 50px auto;
+    padding: 20px;
     text-align: center;
 }
 
-main h1 {
-    font-size: 3em;
-    color: var(--primary-text);
-    margin-bottom: 5px;
+h1 {
+    color: var(--primary-color);
+    font-size: 2.5em;
+    margin-bottom: 10px;
 }
 
 .subtitle {
-    color: #7f8c8d;
-    margin-bottom: 40px;
+    color: var(--text-light);
+    margin-bottom: 30px;
 }
 
-/* --- Navigation des Modes --- */
+.admin-link {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: bold;
+    transition: color 0.2s;
+}
+
+.admin-link:hover {
+    color: var(--secondary-color);
+}
+
+
+/* =======================================================
+   Navigation des Modes
+   ======================================================= */
+
 .mode-nav {
     display: flex;
     justify-content: center;
-    gap: 15px;
-    margin-top: 20px;
+    gap: 10px;
     margin-bottom: 40px;
 }
 
 .mode-nav a {
+    display: block;
+    padding: 10px 15px;
+    border-radius: 20px;
     text-decoration: none;
-    color: var(--primary-text);
-    padding: 10px 20px;
-    border-radius: 25px;
-    border: 1px solid #bdc3c7;
-    transition: all 0.3s;
-    font-weight: 600;
+    font-weight: bold;
+    color: var(--text-color);
+    background-color: var(--input-bg);
+    border: 2px solid transparent;
+    transition: background-color 0.2s, color 0.2s, border-color 0.2s;
 }
 
-.mode-nav a:hover,
-.mode-nav a[style*="background-color: rgb(52, 152, 219)"] { /* Sélectionne le mode actif */
-    background-color: var(--accent-color) !important;
+/* Style pour le mode actif (Mode Standard dans index.html) */
+.mode-nav a[style*="background-color: #3498db"] {
     color: white !important;
-    border-color: var(--accent-color) !important;
+    background-color: var(--primary-color) !important;
+    border-color: var(--primary-color);
 }
 
+.mode-nav a:not([style*="background-color: #3498db"]):hover {
+    background-color: #ddd;
+}
 
-/* =========================================
-   BARRE DE RECHERCHE
-   ========================================= */
+/* =======================================================
+   Barres de Recherche (Standard et Site AI)
+   ======================================================= */
+
 .search-container {
     display: flex;
-    max-width: 650px;
+    align-items: center;
+    max-width: 700px;
     margin: 0 auto;
-    background: var(--card-bg);
+    background-color: var(--card-bg);
     border-radius: 8px;
     box-shadow: var(--shadow);
     overflow: hidden;
-    height: 55px;
+    /* Ajustement de la hauteur pour aligner les boutons */
+    height: 55px; 
 }
 
-#query-input {
+/* Champ de saisie */
+.search-container input[type="text"] {
     flex-grow: 1;
+    padding: 0 15px;
     border: none;
-    padding: 0 20px;
-    font-size: 1.1em;
-    outline: none;
-}
-
-#language-select {
-    padding: 0 10px;
-    border: none;
-    border-left: 1px solid #ecf0f1;
-    background: #f8f9fa;
-    outline: none;
-    cursor: pointer;
-}
-
-.search-btn {
-    background-color: var(--accent-color);
-    color: white;
-    border: none;
-    padding: 0 25px;
     font-size: 1em;
+    height: 100%;
+    outline: none;
+    background-color: transparent;
+}
+
+/* Sélecteur de langue */
+.search-container #language-select {
+    padding: 0 10px;
+    height: 100%;
+    border: none;
+    border-left: 1px solid #ddd;
+    background-color: var(--input-bg);
     cursor: pointer;
-    transition: background 0.2s;
+    font-weight: bold;
+    color: var(--text-color);
 }
 
-.search-btn:hover {
-    background-color: #2980b9;
+/* Boutons de Recherche */
+.search-btn {
+    padding: 0 20px;
+    height: 100%;
+    color: white;
+    font-weight: bold;
+    border: none;
+    cursor: pointer;
+    transition: background-color 0.2s;
+    font-size: 1em;
+    white-space: nowrap;
 }
 
-/* =========================================
-   RÉSULTATS ET STATUT
-   ========================================= */
+/* Style spécifique pour le bouton GROQ (Recherche Générale) */
+.search-btn[onclick*="performGeneralAiSearch"] {
+    background-color: var(--accent-color) !important; /* Vert */
+}
+
+.search-btn[onclick*="performGeneralAiSearch"]:hover {
+    background-color: #27ae60 !important;
+}
+
+/* Style spécifique pour le bouton SITE AI (Support Spécialisé) */
+.search-btn[onclick*="performSiteAiSearch"] {
+    background-color: var(--secondary-color) !important; /* Orange */
+}
+
+.search-btn[onclick*="performSiteAiSearch"]:hover {
+    background-color: #d35400 !important;
+}
+
+/* Style spécifique pour la barre de l'IA du Site */
+/* Nous devons cibler le conteneur pour le fond gris clair */
+#main-content > .search-container:last-of-type {
+    background: var(--input-bg) !important; 
+    border: 1px solid #ddd;
+    /* Assure que l'input n'a pas de fond blanc */
+}
+
+/* =======================================================
+   Résultats et Statut
+   ======================================================= */
+
 #results-area {
-    margin-top: 40px;
+    margin-top: 30px;
     text-align: left;
 }
 
-#loading-indicator {
-    color: var(--accent-color);
+.loading {
+    color: var(--text-light);
     font-style: italic;
-    margin-top: 20px;
     padding: 15px;
-    border: 1px dashed var(--accent-color);
-    border-radius: 5px;
-    text-align: center;
+}
+
+.ai-card {
+    background-color: var(--card-bg);
+    padding: 25px;
+    border-radius: 8px;
+    box-shadow: var(--shadow);
+    white-space: pre-wrap; /* Maintient les sauts de ligne de l'IA */
+    border-left: 5px solid var(--primary-color);
 }
 
 #status-message {
-    padding: 15px;
+    padding: 10px;
     border-radius: 5px;
-    margin-top: 20px;
-    text-align: center;
     font-weight: bold;
+    margin: 15px auto;
+    text-align: center;
+    max-width: 600px;
 }
 
-#status-message.error {
-    background-color: #f8d7da;
+.error {
+    background-color: #f7dddc;
     color: var(--danger-color);
     border: 1px solid var(--danger-color);
 }
 
-.ai-card {
-    background: var(--card-bg);
-    padding: 25px;
-    border-radius: 10px;
-    box-shadow: var(--shadow);
-    margin-top: 20px;
-    white-space: pre-wrap; /* Permet un bon affichage du texte brut de l'IA */
-}
+/* =======================================================
+   Écrans Overlay (Blocage/Maintenance)
+   ======================================================= */
 
-
-/* =========================================
-   ÉCRANS DE BLOCAGE/MAINTENANCE (Overlays)
-   ========================================= */
 .overlay-screen {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background: #fefefe; 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+    background-color: var(--body-bg);
     text-align: center;
-    z-index: 1000;
+    z-index: 999;
 }
 
 .overlay-icon {
-    font-size: 4em;
+    font-size: 5em;
     margin-bottom: 20px;
+    color: var(--danger-color);
 }
 
 .overlay-screen h2 {
-    color: var(--danger-color);
     font-size: 2em;
-    margin-bottom: 15px;
+    margin-bottom: 10px;
+    color: var(--text-color);
 }
 
-.overlay-screen p {
-    color: #7f8c8d;
-    max-width: 400px;
-    font-size: 1.1em;
+/* =======================================================
+   Styles Administrateur (utilisés ici pour la cohérence)
+   ======================================================= */
+
+.account-status {
+    padding: 3px 8px;
+    border-radius: 12px;
+    font-size: 0.75em;
+    font-weight: bold;
+    white-space: nowrap;
 }
 
-/* =========================================
-   RESPONSIVE
-   ========================================= */
-@media (max-width: 768px) {
-    #main-content {
-        padding: 10px;
-        padding-top: 30px;
-    }
-    main h1 {
-        font-size: 2em;
-    }
-    .search-container {
-        flex-direction: column;
-        height: auto;
-        border-radius: 8px;
-    }
-    #query-input, .search-btn, #language-select {
-        width: 100%;
-        padding: 15px 20px;
-    }
-    #language-select {
-        border-left: none;
-        border-top: 1px solid #ecf0f1;
-    }
-    .mode-nav {
-        flex-direction: column;
-        gap: 10px;
-    }
+.status-active {
+    background-color: #d4edda;
+    color: #155724;
+}
+
+.status-blocked {
+    background-color: #f8d7da;
+    color: #721c24;
+}
+
+.status-pending {
+    background-color: #fff3cd;
+    color: #856404;
 }
