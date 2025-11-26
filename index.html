@@ -5,8 +5,58 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniSearch AI - Moteur de Recherche</title>
     <link rel="stylesheet" href="css-public.css"> 
+    <style>
+        /* Styles pour la modale de mise à jour */
+        .update-modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            overflow: auto;
+            background-color: rgba(0,0,0,0.4);
+        }
+        .modal-content {
+            background-color: #fefefe;
+            margin: 15% auto; 
+            padding: 20px;
+            border: 1px solid #888;
+            width: 80%; 
+            max-width: 400px;
+            border-radius: 8px;
+            text-align: center;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
+        }
+        .modal-content h2 {
+            color: var(--accent-color);
+            margin-top: 0;
+        }
+        .modal-content .refresh-btn {
+            background-color: var(--success-color);
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 1em;
+            margin-top: 15px;
+        }
+    </style>
 </head>
 <body>
+
+    <div id="update-modal" class="update-modal">
+      <div class="modal-content">
+        <h2>🚀 Nouvelle Mise à Jour !</h2>
+        <p>Une nouvelle version du site est disponible. Veuillez rafraîchir la page pour appliquer les changements.</p>
+        <button class="refresh-btn" onclick="window.location.reload(true)">
+            Cliquez ici pour Rafraîchir
+        </button>
+      </div>
+    </div>
+
 
     <div id="blocked-screen" class="overlay-screen" style="display: none;">
         <div class="overlay-icon">⛔</div>
@@ -74,9 +124,14 @@
 
     <script>
         // ============================================
-        // CONFIGURATION (DEUX CLÉS D'API GROQ)
+        // CONFIGURATION
         // ============================================
         
+        // --- CONFIGURATION GITHUB MISE À JOUR ---
+        const GITHUB_REPO_API_URL = 'https://api.github.com/repos/louisoff84/test/commits/main'; 
+        const LAST_COMMIT_KEY = 'lastKnownCommitSha'; 
+        // -------------------------------------
+
         // URL de l'API Groq (Commune aux deux IAs)
         const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
 
@@ -86,7 +141,7 @@
         
         // 2. Configuration de l'IA du Site (Support)
         const SITE_AI_API_KEY = "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"; 
-        const SITE_AI_MODEL = "llama-3.1-8b-instant"; // Un modèle plus puissant pour l'aide
+        const SITE_AI_MODEL = "mixtral-8x7b-instruct-v0.1"; 
         
         const STORAGE_MAINTENANCE_SITE = 'siteMaintenance';
         const STORAGE_MAINTENANCE_IA = 'iaMaintenance';
@@ -95,20 +150,22 @@
         const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
 
         // ============================================
-        // 1. VÉRIFICATION D'ACCÈS ET STATUT (Identique)
+        // 1. VÉRIFICATION D'ACCÈS ET STATUT
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             checkSystemStatus();
             updateLoginUI();
             
-            // Écouteur pour la recherche générale (touche Entrée)
+            // Démarrage de la vérification de mise à jour toutes les 30 secondes
+            checkForNewCommit();
+            setInterval(checkForNewCommit, 30000); 
+
+            // Écouteurs pour les recherches (touche Entrée)
             document.getElementById('query-input').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     performGeneralAiSearch();
                 }
             });
-
-            // Écouteur pour l'IA du site (touche Entrée)
             document.getElementById('site-ai-query-input').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
                     performSiteAiSearch();
@@ -165,8 +222,58 @@
         }
 
         // ============================================
-        // 2. FONCTION IA DE RECHERCHE GÉNÉRALE (GROQ)
+        // 2. FONCTION DE VÉRIFICATION GITHUB
         // ============================================
+        async function checkForNewCommit() {
+            const currentSha = localStorage.getItem(LAST_COMMIT_KEY);
+
+            try {
+                const response = await fetch(GITHUB_REPO_API_URL, {
+                    method: 'GET',
+                    // Utiliser l'entête 'Accept' pour s'assurer que l'on reçoit la bonne réponse JSON
+                    headers: { 'Accept': 'application/vnd.github.v3+json' }
+                });
+                
+                if (!response.ok) {
+                    // Supprimez cette ligne en production si elle est trop bruyante
+                    console.error('Erreur API GitHub:', response.statusText); 
+                    return;
+                }
+
+                const data = await response.json();
+                
+                // Le SHA du dernier commit de la branche 'main' est directement dans l'objet réponse
+                const latestSha = data.sha; 
+
+                if (!latestSha) {
+                    console.warn('Impossible de trouver le SHA du dernier commit. Vérifiez l\'URL de la branche.');
+                    return;
+                }
+
+                if (!currentSha) {
+                    // Première vérification : on stocke le SHA.
+                    localStorage.setItem(LAST_COMMIT_KEY, latestSha);
+                    return;
+                }
+
+                if (latestSha !== currentSha) {
+                    // Nouvelle mise à jour détectée !
+                    document.getElementById('update-modal').style.display = 'block';
+                    // NOTE: Nous mettons à jour le SHA ici pour éviter que la popup s'affiche à chaque rafraîchissement
+                    // si l'utilisateur ignore la mise à jour (mais il devra quand même rafraîchir pour obtenir le code).
+                    // Pour forcer le rafraîchissement, on peut laisser le SHA non mis à jour.
+                }
+
+            } catch (error) {
+                console.error('Erreur lors de la vérification GitHub:', error);
+            }
+        }
+
+
+        // ============================================
+        // 3. FONCTIONS IA (Inchangées)
+        // ============================================
+        
         async function performGeneralAiSearch() {
             const queryInput = document.getElementById('query-input');
             const query = queryInput.value.trim();
@@ -180,15 +287,11 @@
             await fetchAiResponse(GENERAL_AI_API_KEY, GENERAL_AI_MODEL, query, systemPrompt);
         }
 
-        // ============================================
-        // 3. FONCTION IA DU SITE (GROQ DÉDIÉE)
-        // ============================================
         async function performSiteAiSearch() {
             const queryInput = document.getElementById('site-ai-query-input');
             const query = queryInput.value.trim();
             const lang = document.getElementById('language-select').value;
 
-            // Prompt plus spécifique aux règles du site / fonctionnalités
             const systemPrompt = `Tu es l'assistant de support du site OmniSearch. Réponds uniquement aux questions concernant la plateforme (règles, modes, connexion, boutique, gestion des comptes). 
             Si la question n'est pas pertinente (ex: 'Qui a écrit Harry Potter?'), réponds poliment que tu ne peux pas aider et que l'utilisateur doit utiliser la fonction de Recherche Générale (Groq). 
             Réponds obligatoirement dans la langue : ${lang}.`;
@@ -196,9 +299,6 @@
             await fetchAiResponse(SITE_AI_API_KEY, SITE_AI_MODEL, query, systemPrompt);
         }
 
-        // ============================================
-        // 4. FONCTION UTILITAIRE DE FETCH (Réutilisable)
-        // ============================================
         async function fetchAiResponse(apiKey, model, query, systemPrompt) {
             const resultsArea = document.getElementById('results-area');
             const loading = document.getElementById('loading-indicator');
@@ -222,7 +322,6 @@
                 return;
             }
 
-            // Vérification de la clé
             if (apiKey.includes("VOTRE_CLE_API_GROQ") || !apiKey) {
                  const keyName = apiKey === GENERAL_AI_API_KEY ? 'Générale' : 'Site Support';
                  statusMsg.textContent = `Erreur Configuration : Clé API Groq (${keyName}) manquante. Veuillez insérer votre clé.`;
