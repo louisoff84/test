@@ -1,7 +1,246 @@
-/* --- Styles de la Page de Gestion des Comptes --- */
-.table-container {
-    overflow-x: auto;
+/* =========================================
+   VARIABLES ET BASE
+   ========================================= */
+:root {
+    --primary-color: #2c3e50;    /* Bleu/Gris foncé pour la sidebar et les boutons principaux */
+    --accent-color: #3498db;     /* Bleu vif pour les liens et titres secondaires */
+    --danger-color: #e74c3c;     /* Rouge pour la déconnexion et les alertes */
+    --success-color: #2ecc71;    /* Vert pour les statuts actifs */
+    --warning-color: #f1c40f;    /* Jaune/Orange pour les alertes/édition */
+    --bg-color: #ecf0f1;         /* Fond principal gris clair */
+    --card-bg: #ffffff;          /* Fond des cartes et du login */
+    --text-color: #34495e;       /* Texte principal */
 }
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background-color: var(--bg-color);
+    color: var(--text-color);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+/* =========================================
+   PAGE LOGIN (Centrée)
+   ========================================= */
+.login-body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--accent-color) 100%);
+}
+
+.login-card {
+    background: var(--card-bg);
+    padding: 40px;
+    border-radius: 12px;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+    width: 100%;
+    max-width: 400px;
+    text-align: center;
+}
+
+.login-header h2 { margin-bottom: 10px; color: var(--primary-color); }
+.login-header p { color: #7f8c8d; margin-bottom: 30px; font-size: 0.9em; }
+
+.form-group { text-align: left; margin-bottom: 20px; }
+.form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
+.form-group input {
+    width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; font-size: 1em; box-sizing: border-box;
+}
+
+.btn-primary {
+    width: 100%; background-color: var(--accent-color); color: white; padding: 12px; border: none; border-radius: 6px; font-size: 1.1em; cursor: pointer; transition: background 0.3s;
+}
+.btn-primary:hover { background-color: #2980b9; }
+
+.error-text { color: var(--danger-color); margin-top: 15px; font-size: 0.9em; min-height: 20px; }
+.login-footer { margin-top: 20px; border-top: 1px solid #eee; padding-top: 15px; }
+.login-footer a { color: #7f8c8d; text-decoration: none; font-size: 0.9em; }
+
+/* Animation pour l'erreur de connexion */
+@keyframes shake {
+    0% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
+    100% { transform: translateX(0); }
+}
+
+/* =========================================
+   DASHBOARD ADMIN (Layout Général)
+   ========================================= */
+body:not(.login-body) {
+    display: flex;
+}
+
+/* 1. SIDEBAR (Barre Latérale) */
+.sidebar {
+    width: 250px;
+    background-color: var(--primary-color);
+    color: white;
+    display: flex;
+    flex-direction: column;
+    padding: 20px;
+    box-shadow: 2px 0 5px rgba(0,0,0,0.1);
+}
+
+.sidebar .brand h3 { margin-top: 0; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 20px; }
+.sidebar nav ul { list-style: none; padding: 0; }
+.sidebar nav li { margin-bottom: 10px; }
+.sidebar nav a { 
+    color: #bdc3c7; 
+    text-decoration: none; 
+    display: block; 
+    padding: 10px 15px; 
+    border-radius: 4px; 
+    transition: 0.2s; 
+    font-size: 1.05em;
+}
+.sidebar nav li.active a, .sidebar nav a:hover { 
+    background-color: rgba(255,255,255,0.1); 
+    color: white; 
+}
+.logout-area { margin-top: auto; padding-top: 20px; }
+
+.btn-logout {
+    width: 100%; 
+    background-color: var(--danger-color); 
+    color: white; 
+    border: none; 
+    padding: 10px; 
+    border-radius: 4px; 
+    cursor: pointer;
+}
+
+/* 2. CONTENU PRINCIPAL */
+.main-content {
+    flex: 1;
+    padding: 40px;
+    overflow-y: auto;
+}
+
+.main-content header { 
+    display: flex; 
+    justify-content: space-between; 
+    align-items: center; 
+    margin-bottom: 40px; 
+    border-bottom: 1px solid #ddd;
+    padding-bottom: 15px;
+}
+
+.main-content header h1 { color: var(--text-color); }
+.view-site-link { color: var(--accent-color); text-decoration: none; font-weight: bold; }
+.view-site-link:hover { text-decoration: underline; }
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 30px;
+}
+
+/* 3. CARTES D'INFORMATION */
+.card { 
+    background: var(--card-bg); 
+    border-radius: 8px; 
+    box-shadow: 0 2px 10px rgba(0,0,0,0.05); 
+    overflow: hidden; 
+}
+.card-header { 
+    background-color: #f8f9fa; 
+    padding: 15px 20px; 
+    border-bottom: 1px solid #eee; 
+}
+.card-header h2 { 
+    margin: 0; 
+    font-size: 1.2em; 
+    color: var(--text-color); 
+}
+.card-body { padding: 20px; }
+.card-body p { margin-bottom: 10px; }
+
+
+/* =========================================
+   TOGGLES DE MAINTENANCE (Switch)
+   ========================================= */
+.switch { position: relative; display: inline-block; width: 50px; height: 26px; }
+.switch input { opacity: 0; width: 0; height: 0; }
+.slider { 
+    position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; 
+    background-color: #ccc; transition: .4s; 
+}
+.slider:before { 
+    position: absolute; content: ""; height: 18px; width: 18px; left: 4px; bottom: 4px; 
+    background-color: white; transition: .4s; 
+}
+
+/* Couleur du slider quand checked = Maintenance ON (Danger) */
+input:checked + .slider { background-color: var(--danger-color); } 
+input:checked + .slider:before { transform: translateX(24px); }
+.slider.round { border-radius: 34px; }
+.slider.round:before { border-radius: 50%; }
+
+.toggle-item { 
+    display: flex; justify-content: space-between; align-items: center; 
+    padding: 15px 0; border-bottom: 1px solid #eee; 
+}
+.toggle-item:last-of-type { border-bottom: none; }
+.toggle-info strong { display: block; margin-bottom: 5px; }
+.toggle-info p { margin: 0; font-size: 0.85em; color: #7f8c8d; }
+
+/* =========================================
+   GESTION DES UTILISATEURS (Blocage rapide & Tables)
+   ========================================= */
+.input-group { display: flex; gap: 10px; margin-bottom: 20px; }
+.input-group input { padding: 10px; border: 1px solid #ccc; border-radius: 4px; flex-grow: 1; }
+
+.btn-secondary { 
+    background-color: var(--primary-color); 
+    color: white; 
+    border: none; 
+    padding: 10px 15px; 
+    border-radius: 4px; 
+    cursor: pointer; 
+    transition: background 0.3s;
+}
+.btn-secondary:hover { background-color: #34495e; }
+.btn-text { 
+    background: none; border: none; color: var(--accent-color); cursor: pointer; 
+    text-decoration: underline; font-size: 0.9em; 
+}
+
+.blocked-list-container ul { 
+    list-style: none; padding: 0; margin-bottom: 15px; border: 1px solid #eee; 
+    border-radius: 4px; max-height: 150px; overflow-y: auto; 
+}
+.blocked-list-container li { 
+    padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 0.9em; 
+}
+.blocked-list-container li:last-child { border-bottom: none; }
+.empty-msg { color: #ccc; font-style: italic; text-align: center; padding: 10px; }
+
+
+/* --- Styles de la Page de Gestion des Comptes (account_management.html) --- */
+.search-controls {
+    display: flex;
+    gap: 15px;
+    margin-bottom: 20px;
+    align-items: center;
+}
+
+.search-controls input, .search-controls select {
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 6px;
+}
+.search-controls input { flex-grow: 1; }
+
+.table-container { overflow-x: auto; }
 
 .data-table {
     width: 100%;
@@ -27,6 +266,16 @@
     background-color: #f5f5f5;
 }
 
+.account-status {
+    padding: 4px 8px;
+    border-radius: 12px;
+    font-weight: bold;
+}
+
+.status-active { background-color: #d4edda; color: var(--success-color); }
+.status-blocked { background-color: #f8d7da; color: var(--danger-color); }
+.status-pending { background-color: #fff3cd; color: var(--warning-color); }
+
 .action-btn {
     padding: 6px 10px;
     border: none;
@@ -34,33 +283,11 @@
     cursor: pointer;
     font-size: 0.85em;
     margin-right: 5px;
+    transition: opacity 0.2s;
 }
+.action-btn:hover { opacity: 0.85; }
 
-.btn-edit { background-color: #ffc107; color: #333; }
+.btn-edit { background-color: var(--warning-color); color: #333; }
 .btn-block { background-color: var(--danger-color); color: white; }
-.btn-unblock { background-color: #28a745; color: white; }
+.btn-unblock { background-color: var(--success-color); color: white; }
 .btn-delete { background-color: #6c757d; color: white; }
-
-.search-controls {
-    display: flex;
-    gap: 15px;
-    margin-bottom: 20px;
-    align-items: center;
-}
-
-.search-controls input {
-    padding: 10px;
-    border: 1px solid #ccc;
-    border-radius: 6px;
-    flex-grow: 1;
-}
-
-.account-status {
-    padding: 4px 8px;
-    border-radius: 12px;
-    font-weight: bold;
-}
-
-.status-active { background-color: #d4edda; color: #155724; }
-.status-blocked { background-color: #f8d7da; color: #721c24; }
-.status-pending { background-color: #fff3cd; color: #856404; }
