@@ -51,12 +51,18 @@
                     <option value="es">ES</option>
                 </select>
 
-                <button class="search-btn" onclick="performGroqSearch()">Rechercher</button>
+                <button class="search-btn" onclick="performGeneralAiSearch()" style="background-color: #2ecc71;">Rechercher (Groq)</button>
             </div>
+            
+            <div class="search-container" style="margin-top: 15px; max-width: 650px; background: #ecf0f1; height: 55px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <input type="text" id="site-ai-query-input" placeholder="Demander à l'IA du Site (Aide, Rôles, etc.)" style="border: none;">
+                <button class="search-btn" onclick="performSiteAiSearch()" style="background-color: #e67e22; padding: 0 15px;">Demander au Site AI</button>
+            </div>
+
 
             <div id="status-message" style="display: none; margin-top: 15px;"></div>
 
-            <div id="results-area" style="display: none;">
+            <div id="results-area" style="margin-top: 20px;">
                 <div id="loading-indicator" class="loading" style="display: none;">
                     L'IA réfléchit et rédige votre réponse... 🤖
                 </div>
@@ -68,12 +74,19 @@
 
     <script>
         // ============================================
-        // CONFIGURATION
+        // CONFIGURATION (DEUX CLÉS D'API GROQ)
         // ============================================
         
-        const GROQ_API_KEY = "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"; 
+        // URL de l'API Groq (Commune aux deux IAs)
         const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-        const GROQ_MODEL = "llama-3.1-8b-instant"; 
+
+        // 1. Configuration de l'IA de Recherche Générale
+        const GENERAL_AI_API_KEY = "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"; 
+        const GENERAL_AI_MODEL = "llama-3.1-8b-instant"; 
+        
+        // 2. Configuration de l'IA du Site (Support)
+        const SITE_AI_API_KEY = "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"; 
+        const SITE_AI_MODEL = "mixtral-8x7b-instruct"; // Un modèle plus puissant pour l'aide
         
         const STORAGE_MAINTENANCE_SITE = 'siteMaintenance';
         const STORAGE_MAINTENANCE_IA = 'iaMaintenance';
@@ -82,15 +95,23 @@
         const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
 
         // ============================================
-        // 1. VÉRIFICATION D'ACCÈS ET STATUT
+        // 1. VÉRIFICATION D'ACCÈS ET STATUT (Identique)
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             checkSystemStatus();
             updateLoginUI();
             
+            // Écouteur pour la recherche générale (touche Entrée)
             document.getElementById('query-input').addEventListener('keypress', function (e) {
                 if (e.key === 'Enter') {
-                    performGroqSearch();
+                    performGeneralAiSearch();
+                }
+            });
+
+            // Écouteur pour l'IA du site (touche Entrée)
+            document.getElementById('site-ai-query-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    performSiteAiSearch();
                 }
             });
         });
@@ -144,12 +165,41 @@
         }
 
         // ============================================
-        // 2. FONCTION DE RECHERCHE (GROQ API)
+        // 2. FONCTION IA DE RECHERCHE GÉNÉRALE (GROQ)
         // ============================================
-        async function performGroqSearch() {
+        async function performGeneralAiSearch() {
             const queryInput = document.getElementById('query-input');
             const query = queryInput.value.trim();
             const lang = document.getElementById('language-select').value;
+
+            const systemPrompt = `Tu es un assistant expert en livres, films, culture et savoir général. 
+            Réponds à la question de manière structurée, claire et utile. 
+            Réponds obligatoirement dans la langue : ${lang}.
+            Si la question porte sur un livre, donne le titre, l'auteur, l'année et un résumé.`;
+            
+            await fetchAiResponse(GENERAL_AI_API_KEY, GENERAL_AI_MODEL, query, systemPrompt);
+        }
+
+        // ============================================
+        // 3. FONCTION IA DU SITE (GROQ DÉDIÉE)
+        // ============================================
+        async function performSiteAiSearch() {
+            const queryInput = document.getElementById('site-ai-query-input');
+            const query = queryInput.value.trim();
+            const lang = document.getElementById('language-select').value;
+
+            // Prompt plus spécifique aux règles du site / fonctionnalités
+            const systemPrompt = `Tu es l'assistant de support du site OmniSearch. Réponds uniquement aux questions concernant la plateforme (règles, modes, connexion, boutique, gestion des comptes). 
+            Si la question n'est pas pertinente (ex: 'Qui a écrit Harry Potter?'), réponds poliment que tu ne peux pas aider et que l'utilisateur doit utiliser la fonction de Recherche Générale (Groq). 
+            Réponds obligatoirement dans la langue : ${lang}.`;
+            
+            await fetchAiResponse(SITE_AI_API_KEY, SITE_AI_MODEL, query, systemPrompt);
+        }
+
+        // ============================================
+        // 4. FONCTION UTILITAIRE DE FETCH (Réutilisable)
+        // ============================================
+        async function fetchAiResponse(apiKey, model, query, systemPrompt) {
             const resultsArea = document.getElementById('results-area');
             const loading = document.getElementById('loading-indicator');
             const responseDiv = document.getElementById('ai-response');
@@ -172,30 +222,27 @@
                 return;
             }
 
-            if (GROQ_API_KEY === "VOTRE_CLE_API_GROQ_ICI" || !GROQ_API_KEY) {
-                statusMsg.textContent = "Erreur Configuration : Clé API manquante. Veuillez insérer votre clé Groq.";
-                statusMsg.className = "error";
-                statusMsg.style.display = 'block';
-                return;
+            // Vérification de la clé
+            if (apiKey.includes("VOTRE_CLE_API_GROQ") || !apiKey) {
+                 const keyName = apiKey === GENERAL_AI_API_KEY ? 'Générale' : 'Site Support';
+                 statusMsg.textContent = `Erreur Configuration : Clé API Groq (${keyName}) manquante. Veuillez insérer votre clé.`;
+                 statusMsg.className = "error";
+                 statusMsg.style.display = 'block';
+                 return;
             }
 
             resultsArea.style.display = 'block';
             loading.style.display = 'block';
 
-            const systemPrompt = `Tu es un assistant expert en livres, films, culture et savoir général. 
-            Réponds à la question de manière structurée, claire et utile. 
-            Réponds obligatoirement dans la langue : ${lang}.
-            Si la question porte sur un livre, donne le titre, l'auteur, l'année et un résumé.`;
-
             try {
                 const response = await fetch(GROQ_API_URL, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${GROQ_API_KEY}`,
+                        'Authorization': `Bearer ${apiKey}`,
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: GROQ_MODEL, 
+                        model: model, 
                         messages: [
                             { role: "system", content: systemPrompt },
                             { role: "user", content: query }
