@@ -10,8 +10,8 @@
 
     <div class="login-card">
         <div class="login-header">
-            <h2>Connexion</h2>
-            <p>Connectez-vous pour accéder au site.</p>
+            <h2>🔑 Connexion</h2>
+            <p>Veuillez vous identifier pour accéder au site.</p>
         </div>
         
         <form id="login-form">
@@ -31,28 +31,26 @@
         </form>
         
         <div class="login-footer">
-            <p>Pas encore de compte ? <a href="#">S'inscrire (simulé)</a></p>
+            <p>Pas encore de compte ? <a href="register.html">S'inscrire</a></p>
             <a href="index.html">← Retour à l'accueil</a>
         </div>
     </div>
 
     <script>
-        // --- CONFIGURATION DES IDENTIFIANTS (Simulée) ---
+        // --- CONFIGURATION ET CLÉS ---
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "1234"; // Identifiants Admin
-        
-        const REGULAR_USERS = [
-            { user: "utilisateur1", pass: "motdepasse1" },
-            { user: "utilisateur2", pass: "motdepasse2" }
-            // Ajoutez d'autres utilisateurs ici
-        ];
+        const USERS_DB_KEY = 'REGULAR_USERS'; // Clé de stockage pour les utilisateurs créés via register.html
+        const SUCCESS_MSG_KEY = 'registrationSuccess'; // Clé pour le message de succès post-inscription
+        const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
+        const STORAGE_CURRENT_USER = 'currentUser';
 
         // --- LOGIQUE DE CONNEXION UNIVERSSELLE ---
 
         document.getElementById('login-form').addEventListener('submit', function(e) {
             e.preventDefault();
             
-            const inputUser = document.getElementById('username').value;
+            const inputUser = document.getElementById('username').value.trim();
             const inputPass = document.getElementById('password').value;
             const errorMsg = document.getElementById('error-msg');
 
@@ -61,16 +59,16 @@
             // 1. VÉRIFICATION ADMIN
             if (inputUser === ADMIN_USER && inputPass === ADMIN_PASS) {
                 // Succès Admin
-                localStorage.setItem('isLoggedIn', 'true');
-                localStorage.setItem('currentUserType', 'admin'); // Type d'utilisateur
-                localStorage.setItem('currentUser', ADMIN_USER);
-                alert("Connexion Administrateur réussie !");
+                localStorage.setItem(STORAGE_IS_LOGGED_IN, 'true');
+                localStorage.setItem('currentUserType', 'admin'); 
+                localStorage.setItem(STORAGE_CURRENT_USER, ADMIN_USER);
                 window.location.href = 'admin.html';
                 return;
             }
 
-            // 2. VÉRIFICATION UTILISATEUR STANDARD
-            const foundUser = REGULAR_USERS.find(u => u.user === inputUser && u.pass === inputPass);
+            // 2. VÉRIFICATION UTILISATEUR STANDARD (chargé depuis la DB créée par register.html)
+            const regularUsers = JSON.parse(localStorage.getItem(USERS_DB_KEY) || '[]');
+            const foundUser = regularUsers.find(u => u.user === inputUser && u.pass === inputPass);
 
             if (foundUser) {
                  // 2a. Vérification si l'utilisateur est bloqué (utilise la liste admin)
@@ -81,11 +79,10 @@
                  }
 
                 // Succès Utilisateur Standard
-                localStorage.setItem('isLoggedIn', 'true');
+                localStorage.setItem(STORAGE_IS_LOGGED_IN, 'true');
                 localStorage.setItem('currentUserType', 'user');
-                localStorage.setItem('currentUser', inputUser); // Définir l'utilisateur pour la vérification de blocage dans index.html
-                alert(`Bienvenue, ${inputUser} !`);
-                window.location.href = 'index.html'; // Redirection vers le site principal
+                localStorage.setItem(STORAGE_CURRENT_USER, inputUser); 
+                window.location.href = 'index.html'; 
                 return;
             }
 
@@ -95,15 +92,17 @@
             setTimeout(() => document.querySelector('.login-card').style.animation = "", 300);
         });
 
-        // Optionnel : Rediriger si déjà connecté
+        // --- LOGIQUE DE POP-UP POST-INSCRIPTION ---
+
         document.addEventListener('DOMContentLoaded', function() {
-            if (localStorage.getItem('isLoggedIn') === 'true') {
-                 const type = localStorage.getItem('currentUserType');
-                 if(type === 'admin') {
-                     // window.location.href = 'admin.html'; // Décommenter pour forcer la redirection
-                 } else {
-                     // window.location.href = 'index.html'; // Décommenter pour forcer la redirection
-                 }
+            // Vérifie si l'utilisateur vient de s'inscrire
+            if (localStorage.getItem(SUCCESS_MSG_KEY) === 'true') {
+                
+                // Afficher la pop-up
+                alert("✅ Merci pour votre inscription ! Veuillez vous connecter avec vos nouveaux identifiants.");
+                
+                // Supprimer le flag pour qu'il ne s'affiche qu'une seule fois
+                localStorage.removeItem(SUCCESS_MSG_KEY);
             }
         });
     </script>
