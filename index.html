@@ -4,401 +4,456 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniSearch AI - Moteur de Recherche</title>
-    <link rel="stylesheet" href="css-public.css"> 
+    <link rel="stylesheet" href="css-public.css">
+    
     <style>
-        /* Styles pour la modale de mise à jour */
-        .update-modal {
-            display: none;
+        /* =========================================
+           STYLES DU WIDGET DE CHAT FLOTTANT (Inclus pour la démonstration)
+           ========================================= */
+        .chat-toggle-btn {
             position: fixed;
-            z-index: 1000;
-            left: 0;
-            top: 0;
-            width: 100%;
-            height: 100%;
-            overflow: auto;
-            background-color: rgba(0,0,0,0.4);
-        }
-        .modal-content {
-            background-color: #fefefe;
-            margin: 15% auto; 
-            padding: 20px;
-            border: 1px solid #888;
-            width: 80%; 
-            max-width: 400px;
-            border-radius: 8px;
-            text-align: center;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.3);
-        }
-        .modal-content h2 {
-            color: var(--primary-color);
-            margin-top: 0;
-        }
-        .modal-content .refresh-btn {
-            background-color: var(--success-color);
+            bottom: 25px;
+            right: 25px;
+            width: 55px;
+            height: 55px;
+            background-color: var(--accent);
             color: white;
-            padding: 10px 20px;
             border: none;
-            border-radius: 5px;
+            border-radius: 50%;
+            font-size: 1.8em;
             cursor: pointer;
-            font-size: 1em;
-            margin-top: 15px;
-            display: block; 
-            width: 100%;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 1000;
+            transition: transform 0.2s, background-color 0.2s;
+            line-height: 55px;
+            text-align: center;
+        }
+        .chat-toggle-btn:hover {
+            background-color: var(--accent-hover);
+            transform: scale(1.05);
+        }
+        
+        .chat-widget {
+            position: fixed;
+            bottom: 90px;
+            right: 25px;
+            width: 320px;
+            height: 400px;
+            background-color: var(--card-bg);
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-subtle);
+            border: 1px solid var(--border-color);
+            z-index: 999;
+            display: none;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        
+        .chat-header {
+            background-color: var(--primary);
+            color: white;
+            padding: 12px 15px;
+            font-weight: 600;
+            font-size: 1.1em;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .chat-header .close-btn {
+            background: none;
+            border: none;
+            color: white;
+            font-size: 1.2em;
+            cursor: pointer;
+            opacity: 0.8;
+            transition: opacity 0.2s;
+        }
+        .chat-header .close-btn:hover { opacity: 1; }
+
+        .chat-body {
+            flex-grow: 1;
+            padding: 10px;
+            overflow-y: auto;
+            background-color: var(--bg-light);
+            display: flex;
+            flex-direction: column;
+        }
+
+        .chat-input-area {
+            border-top: 1px solid var(--border-color);
+            padding: 10px;
+            display: flex;
+            gap: 5px;
+        }
+        .chat-input-area input {
+            flex-grow: 1;
+            padding: 8px;
+            border: 1px solid var(--border-color);
+            border-radius: 6px;
+            outline: none;
+        }
+        .chat-input-area button {
+            background-color: var(--accent);
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: background-color 0.2s;
+        }
+        .chat-input-area button:hover {
+            background-color: var(--accent-hover);
+        }
+        
+        /* Styles des messages */
+        .message {
+            max-width: 85%;
+            padding: 8px 12px;
+            border-radius: 15px;
+            margin-bottom: 10px;
+            line-height: 1.4;
+            word-wrap: break-word;
+        }
+        .user-message {
+            background-color: var(--accent);
+            color: white;
+            margin-left: auto;
+            border-bottom-right-radius: 4px;
+        }
+        .ai-message {
+            background-color: white;
+            color: var(--primary);
+            border: 1px solid var(--border-color);
+            margin-right: auto;
+            border-top-left-radius: 4px;
+        }
+
+        /* Mode mobile: le widget prend plus de place */
+        @media (max-width: 600px) {
+            .chat-widget {
+                width: 90%;
+                height: 70%;
+                bottom: 10px;
+                right: 5%;
+                left: 5%;
+            }
+            .chat-toggle-btn {
+                bottom: 10px;
+                right: 10px;
+            }
         }
     </style>
 </head>
 <body>
 
-    <div id="update-modal" class="update-modal">
-      <div class="modal-content">
-        <h2>🚀 Nouvelle Mise à Jour !</h2>
-        <p>Une nouvelle version du site est disponible. Veuillez rafraîchir la page pour appliquer les changements.</p>
-        
-        <button class="refresh-btn" onclick="updateAndReload()">
-            Cliquez ici pour Rafraîchir
-        </button>
-        
-        <button class="refresh-btn" style="background-color: #7f8c8d;" onclick="ignoreUpdate()">
-            Ignorer
-        </button>
-      </div>
+    <div class="overlay-screen" id="maintenance-overlay" style="display:none;">
+        <span class="overlay-icon">🚧</span>
+        <h2>Maintenance du Site</h2>
+        <p>Le site OmniSearch est actuellement en maintenance pour des améliorations. Veuillez revenir plus tard.</p>
+        <a href="login.html">Connexion Administrateur</a>
     </div>
 
+    
+    <header>
+        <div id="user-info"></div>
+        <a href="login.html" class="admin-link" id="admin-link">Connexion Admin</a>
+    </header>
 
-    <div id="blocked-screen" class="overlay-screen" style="display: none;">
-        <div class="overlay-icon">⛔</div>
-        <h2>Accès Refusé</h2>
-        <p>Votre compte a été bloqué par un administrateur. Contactez le support pour plus d'informations.</p>
-        <br>
-        <a href="#" onclick="logout()" style="color:#4285f4;">Se Déconnecter</a>
+    <main id="main-content">
+        <h1>OmniSearch AI</h1>
+        <p class="subtitle">Votre moteur de recherche intelligent propulsé par l'IA.</p>
+
+        <div class="search-container">
+            <input type="text" id="query-input" placeholder="Posez votre question...">
+            <select id="language-select">
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+            </select>
+            <button class="search-btn" onclick="performSearch()">Rechercher</button>
+        </div>
+
+        <div id="results-area">
+            <div id="status-message" style="display:none;"></div>
+            <div id="ai-response" class="ai-card" style="display: none;"></div>
+        </div>
+
+    </main>
+    
+    <button class="chat-toggle-btn" id="chat-toggle-btn">💬</button>
+
+    <div class="chat-widget" id="chat-widget">
+        <div class="chat-header">
+            <span>OmniChat AI</span>
+            <button class="close-btn" onclick="toggleChat()">X</button>
+        </div>
+        <div class="chat-body" id="chat-body">
+            <div class="message ai-message">Bonjour ! Je suis OmniChat, l'assistant IA. Posez-moi une question !</div>
+        </div>
+        <div class="chat-input-area">
+            <input type="text" id="chat-input" placeholder="Écrivez votre message...">
+            <button onclick="sendChatMessage()">Envoyer</button>
+        </div>
     </div>
-
-    <div id="maintenance-screen" class="overlay-screen" style="display: none;">
-        <div class="overlay-icon">🚧</div>
-        <h2>Site en Maintenance</h2>
-        <p>Nous effectuons actuellement des mises à jour importantes. Le service sera de retour très bientôt.</p>
-        <br>
-        <a href="login.html" style="color:#4285f4;">Accès Admin</a>
-    </div>
-
-    <div id="main-content">
-        <header style="display: flex; justify-content: flex-end; padding-top: 15px; padding-right: 15px;">
-            <span id="user-info" style="margin-right: 20px;"></span>
-            <a href="shop.html" class="admin-link" style="margin-right: 20px;">🎁 Boutique & Giveaways</a>
-            <a href="login.html" class="admin-link" id="login-link">Connexion</a> 
-        </header>
-
-        <main>
-            <h1>OmniSearch AI 🧠</h1>
-            <p class="subtitle">Explorez les livres, les films et le savoir mondial grâce à l'IA.</p>
-
-            <nav class="mode-nav">
-                <a href="index.html" style="background-color: #3498db; color: white;">Mode Standard</a>
-                <a href="pro_mode.html">Mode Pro 💼</a>
-                <a href="agent_mode.html">Mode Agent 🕵️</a>
-                <a href="hosting_mode.html">Mode Hébergement 🌐</a> 
-            </nav>
-
-            <div class="search-container">
-                <input type="text" id="query-input" placeholder="Posez votre question...">
-                
-                <select id="language-select">
-                    <option value="fr" selected>FR</option>
-                    <option value="en">EN</option>
-                    <option value="es">ES</option>
-                </select>
-
-                <button class="search-btn" onclick="performGeneralAiSearch()" style="background-color: #2ecc71;">Rechercher (Groq)</button>
-            </div>
-            
-            <div class="search-container" style="margin-top: 15px; max-width: 650px; background: #ecf0f1; height: 55px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
-                <input type="text" id="site-ai-query-input" placeholder="Demander à l'IA du Site (Aide, Rôles, etc.)" style="border: none;">
-                <button class="search-btn" onclick="performSiteAiSearch()" style="background-color: #e67e22; padding: 0 15px;">Demander au Site AI</button>
-            </div>
-
-
-            <div id="status-message" style="display: none; margin-top: 15px;"></div>
-
-            <div id="results-area" style="margin-top: 20px;">
-                <div id="loading-indicator" class="loading" style="display: none;">
-                    L'IA réfléchit et rédige votre réponse... 🤖
-                </div>
-                <div id="ai-response" class="ai-card" style="display: none;">
-                    </div>
-            </div>
-        </main>
-    </div>
-
+    
+    
     <script>
-        // ============================================
-        // CONFIGURATION
-        // ============================================
-        
-        // --- CONFIGURATION GITHUB ---
-        const GITHUB_REPO_API_URL = 'https://api.github.com/repos/louisoff84/test/commits/main'; 
-        const LAST_COMMIT_KEY = 'lastKnownCommitSha'; 
-        // -------------------------------------
+        // ==========================================================
+        //         CONFIGURATION ET CLÉS API GROQ
+        // ==========================================================
+        const GROQ_API_KEY_SEARCH = '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';
+        // La clé pour le code (gsk_3QpXYSbw...) n'est pas utilisée ici, car c'est une fonction de recherche/chat.
+        const GROQ_MODEL = 'llama-3.1-8b-instant';
+        const GROQ_API_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
-        // URL de l'API Groq (Commune aux deux IAs)
-        const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
-
-        // 1. Configuration de l'IA de Recherche Générale (Clé: gsk_wEphXcRcDMzCaglsRT54...)
-        const GENERAL_AI_API_KEY = "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"; 
-        const GENERAL_AI_MODEL = "llama-3.1-8b-instant"; 
-        
-        // 2. Configuration de l'IA du Site (Support) (Clé: gsk_3QpXYSbwLGue4XypqBDpWGdyb3FY...)
-        const SITE_AI_API_KEY = "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"; 
-        const SITE_AI_MODEL = "llama-3.1-8b-instant"; 
-        
-        const STORAGE_MAINTENANCE_SITE = 'siteMaintenance';
-        const STORAGE_MAINTENANCE_IA = 'iaMaintenance';
-        const STORAGE_BLOCKED_USERS = 'blockedUsers';
+        // --- CONSTANTES DE STOCKAGE LOCAL ---
+        const MAINTENANCE_SITE = 'siteMaintenance';
+        const MAINTENANCE_IA = 'iaMaintenance';
+        const BLOCKED_USERS = 'blockedUsers';
         const STORAGE_CURRENT_USER = 'currentUser';
         const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
 
-        // ============================================
-        // 1. GESTION DE LA PAGE (Démarrage, Connexion, Statut)
-        // ============================================
-        document.addEventListener('DOMContentLoaded', () => {
-            checkSystemStatus();
-            updateLoginUI();
-            
-            // Démarrage de la vérification de mise à jour toutes les 30 secondes
-            checkForNewCommit();
-            setInterval(checkForNewCommit, 30000); 
+        // --- ÉLÉMENTS DU DOM ---
+        const queryInput = document.getElementById('query-input');
+        const aiResponseDiv = document.getElementById('ai-response');
+        const statusMessageDiv = document.getElementById('status-message');
+        const searchButton = document.querySelector('.search-btn');
 
-            // Écouteurs pour les recherches (touche Entrée)
-            document.getElementById('query-input').addEventListener('keypress', function (e) {
+        // --- LOGIQUE D'INITIALISATION ET DE SÉCURITÉ ---
+
+        document.addEventListener('DOMContentLoaded', () => {
+            checkMaintenanceAndStatus();
+            // Lier la touche Entrée à la fonction de recherche principale
+            queryInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
-                    performGeneralAiSearch();
-                }
-            });
-            document.getElementById('site-ai-query-input').addEventListener('keypress', function (e) {
-                if (e.key === 'Enter') {
-                    performSiteAiSearch();
+                    performSearch();
                 }
             });
         });
 
-        function updateLoginUI() {
-            const isLoggedIn = localStorage.getItem(STORAGE_IS_LOGGED_IN) === 'true';
-            const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
-            const loginLink = document.getElementById('login-link');
-            const userInfo = document.getElementById('user-info');
-            
-            if (isLoggedIn) {
-                loginLink.textContent = "Déconnexion";
-                loginLink.onclick = logout;
-                loginLink.href = "#"; 
-                userInfo.textContent = `Connecté: ${currentUser} |`;
-            } else {
-                loginLink.textContent = "Connexion";
-                loginLink.href = "login.html";
-                loginLink.onclick = null;
-                userInfo.textContent = "";
+        function displayStatusMessage(message, type = 'info') {
+            statusMessageDiv.textContent = message;
+            statusMessageDiv.className = ''; // Réinitialiser les classes
+            statusMessageDiv.classList.add('status-message');
+            if (type === 'error') {
+                statusMessageDiv.classList.add('error');
             }
+            statusMessageDiv.style.display = 'block';
         }
 
+        function checkMaintenanceAndStatus() {
+            const siteMaintenance = localStorage.getItem(MAINTENANCE_SITE) === 'true';
+            const iaMaintenance = localStorage.getItem(MAINTENANCE_IA) === 'true';
+            const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
+            const blockedUsers = JSON.parse(localStorage.getItem(BLOCKED_USERS) || '[]');
+            
+            // 1. Maintenance Totale
+            if (siteMaintenance) {
+                document.getElementById('maintenance-overlay').style.display = 'flex';
+                return;
+            }
+
+            // 2. Utilisateur Bloqué
+            if (currentUser && blockedUsers.includes(currentUser)) {
+                document.getElementById('maintenance-overlay').style.display = 'flex';
+                document.querySelector('.overlay-icon').textContent = '🚫';
+                document.querySelector('.overlay-screen h2').textContent = 'Accès Refusé';
+                document.querySelector('.overlay-screen p').textContent = 'Votre compte a été bloqué par un administrateur.';
+                document.getElementById('admin-link').style.display = 'none';
+                return;
+            }
+
+            // 3. Maintenance IA
+            if (iaMaintenance) {
+                displayStatusMessage("L'IA est en maintenance. Seule la recherche classique fonctionne.", 'error');
+                searchButton.disabled = true;
+                queryInput.placeholder = "Recherche IA désactivée...";
+                
+                // Désactiver le chat si l'IA est en maintenance
+                document.getElementById('chat-input').disabled = true;
+                document.getElementById('chat-input').placeholder = "Chat désactivé (Maintenance IA)";
+                document.querySelector('.chat-input-area button').disabled = true;
+                if (chatWidget.style.display === 'flex') {
+                     addMessage("L'assistant IA est temporairement en maintenance. Veuillez réessayer plus tard.", 'ai');
+                }
+                
+            } else {
+                searchButton.disabled = false;
+                queryInput.placeholder = "Posez votre question...";
+            }
+            
+            // Afficher l'état de connexion
+            const userInfoDiv = document.getElementById('user-info');
+            if (currentUser) {
+                userInfoDiv.innerHTML = `Connecté comme : <strong>${currentUser}</strong>`;
+                document.getElementById('admin-link').textContent = "Déconnexion";
+                document.getElementById('admin-link').href = "#"; // Utiliser JS pour la déconnexion
+                document.getElementById('admin-link').onclick = logout;
+            } else {
+                 userInfoDiv.innerHTML = `Invité`;
+                 document.getElementById('admin-link').textContent = "Connexion Admin";
+                 document.getElementById('admin-link').href = "login.html";
+                 document.getElementById('admin-link').onclick = null;
+            }
+        }
+        
         function logout() {
             localStorage.removeItem(STORAGE_IS_LOGGED_IN);
             localStorage.removeItem(STORAGE_CURRENT_USER);
-            localStorage.removeItem('currentUserType'); 
-            window.location.href = 'index.html'; 
+            localStorage.removeItem(STORAGE_CURRENT_USER_TYPE);
+            window.location.href = 'login.html'; // Rediriger vers la page de connexion
         }
 
-        function checkSystemStatus() {
-            const currentUser = localStorage.getItem(STORAGE_CURRENT_USER) || 'anonyme'; 
-            const siteMaint = localStorage.getItem(STORAGE_MAINTENANCE_SITE) === 'true';
-            const blockedUsers = JSON.parse(localStorage.getItem(STORAGE_BLOCKED_USERS) || '[]');
-            
-            const mainContent = document.getElementById('main-content');
-            
-            if (siteMaint) {
-                document.getElementById('maintenance-screen').style.display = 'flex';
-                mainContent.style.display = 'none';
-                return; 
-            }
-            
-            if (blockedUsers.includes(currentUser)) {
-                document.getElementById('blocked-screen').style.display = 'flex';
-                mainContent.style.display = 'none';
-                return;
-            }
+        // ==========================================================
+        //         FONCTIONS DE RECHERCHE PRINCIPALE (IA)
+        // ==========================================================
 
-            mainContent.style.display = 'block';
-        }
-
-        // ============================================
-        // 2. GESTION DES MISES À JOUR GITHUB
-        // ============================================
-
-        // Met à jour le SHA connu dans le localStorage et recharge la page pour appliquer la mise à jour
-        function updateAndReload() {
-            const modal = document.getElementById('update-modal');
-            const latestSha = modal.dataset.latestSha;
-            if (latestSha) {
-                localStorage.setItem(LAST_COMMIT_KEY, latestSha);
-            }
-            // window.location.reload(true) force un rechargement sans cache
-            window.location.reload(true); 
-        }
-
-        // Masque la pop-up et met à jour le SHA connu pour qu'elle ne réapparaisse pas immédiatement
-        function ignoreUpdate() {
-            const modal = document.getElementById('update-modal');
-            const latestSha = modal.dataset.latestSha;
-            if (latestSha) {
-                localStorage.setItem(LAST_COMMIT_KEY, latestSha);
-            }
-            modal.style.display = 'none';
-        }
-
-        // Vérifie l'API GitHub pour le dernier commit
-        async function checkForNewCommit() {
-            const currentSha = localStorage.getItem(LAST_COMMIT_KEY);
-            const modal = document.getElementById('update-modal');
-
-            try {
-                const response = await fetch(GITHUB_REPO_API_URL, {
-                    method: 'GET',
-                    headers: { 'Accept': 'application/vnd.github.v3+json' }
-                });
-                
-                if (!response.ok) {
-                    console.error('Erreur API GitHub:', response.statusText); 
-                    return;
-                }
-
-                const data = await response.json();
-                const latestSha = data.sha; 
-
-                if (!latestSha) {
-                    console.warn('Impossible de trouver le SHA du dernier commit. Vérifiez l\'URL de la branche.');
-                    return;
-                }
-
-                if (!currentSha) {
-                    // Première vérification : on stocke le SHA.
-                    localStorage.setItem(LAST_COMMIT_KEY, latestSha);
-                    return;
-                }
-
-                if (latestSha !== currentSha) {
-                    // Nouvelle mise à jour détectée !
-                    modal.style.display = 'block';
-                    // Stocke le SHA actuel de la mise à jour dans un attribut de données pour les fonctions de la modale
-                    modal.dataset.latestSha = latestSha;
-                }
-
-            } catch (error) {
-                console.error('Erreur lors de la vérification GitHub:', error);
-            }
-        }
-
-
-        // ============================================
-        // 3. FONCTIONS IA
-        // ============================================
-        
-        // Recherche Générale avec GENERAL_AI_API_KEY
-        async function performGeneralAiSearch() {
-            const queryInput = document.getElementById('query-input');
+        async function performSearch() {
             const query = queryInput.value.trim();
-            const lang = document.getElementById('language-select').value;
-
-            const systemPrompt = `Tu es un assistant expert en livres, films, culture et savoir général. 
-            Réponds à la question de manière structurée, claire et utile. 
-            Réponds obligatoirement dans la langue : ${lang}.
-            Si la question porte sur un livre, donne le titre, l'auteur, l'année et un résumé.`;
-            
-            await fetchAiResponse(GENERAL_AI_API_KEY, GENERAL_AI_MODEL, query, systemPrompt);
-        }
-
-        // Support Site avec SITE_AI_API_KEY
-        async function performSiteAiSearch() {
-            const queryInput = document.getElementById('site-ai-query-input');
-            const query = queryInput.value.trim();
-            const lang = document.getElementById('language-select').value;
-
-            const systemPrompt = `Tu es l'assistant de support du site OmniSearch. Réponds uniquement aux questions concernant la plateforme (règles, modes, connexion, boutique, gestion des comptes). 
-            Si la question n'est pas pertinente (ex: 'Qui a écrit Harry Potter?'), réponds poliment que tu ne peux pas aider et que l'utilisateur doit utiliser la fonction de Recherche Générale (Groq). 
-            Réponds obligatoirement dans la langue : ${lang}.`;
-            
-            await fetchAiResponse(SITE_AI_API_KEY, SITE_AI_MODEL, query, systemPrompt);
-        }
-
-        // Fonction utilitaire pour envoyer la requête à Groq
-        async function fetchAiResponse(apiKey, model, query, systemPrompt) {
-            const resultsArea = document.getElementById('results-area');
-            const loading = document.getElementById('loading-indicator');
-            const responseDiv = document.getElementById('ai-response');
-            const statusMsg = document.getElementById('status-message');
-
-            statusMsg.style.display = 'none';
-            responseDiv.style.display = 'none';
-            responseDiv.textContent = '';
+            const language = document.getElementById('language-select').value;
             
             if (!query) {
-                alert("Veuillez écrire quelque chose !");
+                displayStatusMessage("Veuillez entrer une requête.", 'error');
+                aiResponseDiv.style.display = 'none';
                 return;
             }
 
-            const iaMaint = localStorage.getItem(STORAGE_MAINTENANCE_IA) === 'true';
-            if (iaMaint) {
-                statusMsg.textContent = "⚠️ La recherche IA est temporairement en maintenance. Revenez plus tard.";
-                statusMsg.className = "error";
-                statusMsg.style.display = 'block';
-                return;
-            }
-
-            if (apiKey.includes("VOTRE_CLE_API_GROQ") || !apiKey) {
-                 const keyName = apiKey === GENERAL_AI_API_KEY ? 'Générale' : 'Site Support';
-                 statusMsg.textContent = `Erreur Configuration : Clé API Groq (${keyName}) manquante. Veuillez insérer votre clé.`;
-                 statusMsg.className = "error";
-                 statusMsg.style.display = 'block';
+            if (localStorage.getItem(MAINTENANCE_IA) === 'true') {
+                 displayStatusMessage("Recherche impossible : L'IA est en maintenance.", 'error');
                  return;
             }
+            
+            displayStatusMessage("Recherche en cours...", 'info');
+            aiResponseDiv.style.display = 'none';
 
-            resultsArea.style.display = 'block';
-            loading.style.display = 'block';
-
+            // Prompts pour l'IA
+            const systemPrompt = `You are a helpful and precise AI assistant called OmniSearch. You must answer the user's query in ${language}. Provide a detailed and well-structured response.`;
+            
             try {
-                const response = await fetch(GROQ_API_URL, {
+                const response = await fetch(GROQ_API_ENDPOINT, {
                     method: 'POST',
                     headers: {
-                        'Authorization': `Bearer ${apiKey}`,
-                        'Content-Type': 'application/json'
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GROQ_API_KEY_SEARCH}`
                     },
                     body: JSON.stringify({
-                        model: model, 
+                        model: GROQ_MODEL,
                         messages: [
                             { role: "system", content: systemPrompt },
                             { role: "user", content: query }
                         ],
-                        temperature: 0.7,
-                        max_tokens: 1024
+                        temperature: 0.7 
                     })
                 });
 
-                const data = await response.json();
-
-                if (data.error) {
-                    throw new Error(data.error.message);
+                if (!response.ok) {
+                    throw new Error(`Erreur API: ${response.status} - ${response.statusText}`);
                 }
 
+                const data = await response.json();
                 const aiText = data.choices[0].message.content;
-                loading.style.display = 'none';
-                responseDiv.style.display = 'block';
-                responseDiv.textContent = aiText;
+
+                displayStatusMessage("Réponse de l'IA (llama-3.1-8b-instant) :", 'info');
+                aiResponseDiv.textContent = aiText;
+                aiResponseDiv.style.display = 'block';
 
             } catch (error) {
-                loading.style.display = 'none';
-                statusMsg.textContent = `Erreur IA : ${error.message}. Vérifiez la clé API ou le nom du modèle Groq.`;
-                statusMsg.className = "error";
-                statusMsg.style.display = 'block';
-                console.error(error);
+                console.error("Erreur de recherche IA:", error);
+                displayStatusMessage(`Erreur de connexion à l'IA: ${error.message}. Vérifiez la console pour plus de détails.`, 'error');
+                aiResponseDiv.style.display = 'none';
+            } finally {
+                 // Remettre le bouton actif
             }
         }
+
+
+        // ==========================================================
+        //         FONCTIONS DU WIDGET DE CHAT (IA)
+        // ==========================================================
+
+        const chatWidget = document.getElementById('chat-widget');
+        const chatBody = document.getElementById('chat-body');
+        const chatInput = document.getElementById('chat-input');
+        
+        document.getElementById('chat-toggle-btn').addEventListener('click', toggleChat);
+        chatInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendChatMessage();
+            }
+        });
+
+        function toggleChat() {
+            chatWidget.style.display = chatWidget.style.display === 'flex' ? 'none' : 'flex';
+            if (chatWidget.style.display === 'flex') {
+                chatInput.focus();
+            }
+        }
+        
+        function addMessage(text, sender) {
+            const msgDiv = document.createElement('div');
+            msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
+            msgDiv.textContent = text;
+            chatBody.appendChild(msgDiv);
+            
+            chatBody.scrollTop = chatBody.scrollHeight;
+        }
+
+        async function sendChatMessage() {
+            const userText = chatInput.value.trim();
+            if (userText === '') return;
+            
+            if (localStorage.getItem(MAINTENANCE_IA) === 'true') {
+                 addMessage("L'assistant est en maintenance et ne peut pas répondre.", 'ai');
+                 chatInput.value = '';
+                 return;
+            }
+
+            addMessage(userText, 'user');
+            chatInput.value = '';
+
+            // Ajouter le message de "frappe" de l'IA
+            addMessage('...', 'ai');
+            const typingMsg = chatBody.lastElementChild;
+
+            // Prompt simple pour le chat
+            const chatSystemPrompt = "You are a quick, friendly, and informal chat assistant. Answer briefly in French.";
+
+            try {
+                const response = await fetch(GROQ_API_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${GROQ_API_KEY_SEARCH}` // Utilise la même clé de recherche
+                    },
+                    body: JSON.stringify({
+                        model: GROQ_MODEL,
+                        messages: [
+                            { role: "system", content: chatSystemPrompt },
+                            { role: "user", content: userText }
+                        ],
+                        temperature: 0.8
+                    })
+                });
+
+                if (!response.ok) {
+                    throw new Error(`Erreur API: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const aiText = data.choices[0].message.content;
+
+                // Remplacer le message de frappe par la réponse réelle
+                typingMsg.textContent = aiText;
+                typingMsg.classList.remove('ai-message');
+                typingMsg.classList.add('ai-message');
+
+            } catch (error) {
+                console.error("Erreur de chat IA:", error);
+                typingMsg.textContent = "Désolé, une erreur est survenue lors de la connexion à l'IA.";
+                typingMsg.classList.remove('ai-message');
+                typingMsg.classList.add('ai-message');
+            }
+        }
+        
     </script>
 </body>
 </html>
