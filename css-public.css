@@ -1,17 +1,18 @@
-/* =========================================
+/* =================================================================
    OmniSearch AI - style.css (PUBLIC)
-   Esthétique: Minimaliste, Moderne, Centré
-   ========================================= */
+   Esthétique: Minimaliste, Moderne, Mobile-First
+   ================================================================= */
 
 :root {
-    --primary: #1f2937;
-    --accent: #3b82f6;
-    --bg-light: #f9fafb;
-    --card-bg: #ffffff;
-    --text-muted: #6b7280;
-    --shadow-light: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -2px rgba(0, 0, 0, 0.05);
-    --border-color: #e5e7eb;
-    --radius-md: 8px;
+    --primary: #1f2937;         /* Gris Ardoise - Texte principal */
+    --accent: #3b82f6;          /* Bleu Vif - Boutons, focus */
+    --accent-hover: #2563eb;    /* Bleu sombre pour le survol */
+    --bg-light: #f9fafb;        /* Fond de page léger */
+    --card-bg: #ffffff;         /* Fond des cartes de résultats */
+    --text-muted: #6b7280;      /* Texte secondaire/gris */
+    --border-color: #e5e7eb;    /* Bordure fine */
+    --radius-md: 10px;          /* Rayons d'angle doux */
+    --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.08);
 }
 
 * {
@@ -26,155 +27,133 @@ body {
     color: var(--primary);
     line-height: 1.6;
     min-height: 100vh;
-    display: flex; /* Pour centrer le contenu principal */
-    flex-direction: column;
-}
-
-/* ================== OVERLAYS (BLOCAGE/MAINTENANCE) ================== */
-.overlay-screen {
-    position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
-    background-color: rgba(255, 255, 255, 0.95);
-    z-index: 1000;
     display: flex;
     flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    text-align: center;
-    padding: 20px;
-}
-.overlay-icon {
-    font-size: 4rem;
-    margin-bottom: 20px;
-}
-.overlay-screen h2 {
-    color: var(--primary);
-    margin-bottom: 10px;
-}
-.overlay-screen p {
-    color: var(--text-muted);
-}
-.overlay-screen a {
-    color: var(--accent);
-    text-decoration: none;
-    font-weight: 600;
-    margin-top: 10px;
 }
 
-/* ================== HEADER ================== */
+/* ================== A. HEADER & UTILS ================== */
 header {
     display: flex;
-    justify-content: flex-end; /* Aligner à droite */
+    justify-content: flex-end;
     align-items: center;
-    padding: 20px 40px;
+    padding: 15px 20px; /* Moins de padding sur mobile */
     width: 100%;
 }
 #user-info {
     color: var(--text-muted);
-    font-size: 0.9em;
-    margin-right: 15px;
+    font-size: 0.8em;
+    margin-right: 10px;
 }
 .admin-link {
     color: var(--accent);
     text-decoration: none;
     font-weight: 600;
-    padding: 6px 12px;
+    padding: 8px 15px;
     border: 1px solid var(--accent);
     border-radius: var(--radius-md);
-    transition: background-color 0.2s, color 0.2s;
+    transition: all 0.2s;
 }
 .admin-link:hover {
     background-color: var(--accent);
     color: white;
+    box-shadow: 0 4px 8px rgba(59, 130, 246, 0.3);
 }
 
-/* ================== MAIN CONTENT & TITLES ================== */
+/* ================== B. CONTENU PRINCIPAL & TYPOGRAPHIE ================== */
 #main-content {
     flex-grow: 1;
     display: flex;
     flex-direction: column;
     align-items: center;
-    padding: 40px 20px;
+    padding: 40px 15px; /* Optimisé pour mobile */
     max-width: 900px;
     width: 100%;
-    margin: 0 auto; /* Centrer horizontalement */
-}
-
-main {
-    width: 100%;
-    text-align: center;
+    margin: 0 auto;
 }
 
 h1 {
-    font-size: 3rem;
+    font-size: 2.2rem; /* Taille idéale sur mobile */
     font-weight: 800;
-    margin-bottom: 10px;
+    margin-bottom: 8px;
     color: var(--primary);
 }
 
 .subtitle {
     color: var(--text-muted);
-    font-size: 1.1em;
-    margin-bottom: 30px;
+    font-size: 1em;
+    margin-bottom: 25px;
 }
 
-/* ================== SEARCH BAR ================== */
+/* ================== C. SEARCH BAR (LE FOCUS) ================== */
 .search-container {
     display: flex;
+    flex-direction: column; /* Empilement par défaut (mobile-first) */
     width: 100%;
     max-width: 650px;
     background: var(--card-bg);
     border: 1px solid var(--border-color);
     border-radius: var(--radius-md);
-    box-shadow: var(--shadow-light);
-    padding: 5px;
+    box-shadow: var(--shadow-subtle);
+    padding: 10px;
+    gap: 10px; /* Espace entre les éléments empilés */
 }
 
 #query-input {
     flex-grow: 1;
-    border: none;
-    padding: 12px 15px;
-    font-size: 1em;
+    border: 1px solid var(--border-color);
+    padding: 15px;
+    font-size: 1.1em;
     outline: none;
-    border-radius: var(--radius-md) 0 0 var(--radius-md);
-    background: transparent;
+    border-radius: var(--radius-md);
+    background: var(--bg-light);
+    transition: border-color 0.2s;
+}
+#query-input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.2);
 }
 
 #language-select {
-    border: none;
-    background: transparent;
-    padding: 0 10px;
+    width: 100%; /* Prend toute la largeur sur mobile */
+    padding: 15px;
+    border: 1px solid var(--border-color);
+    border-radius: var(--radius-md);
     color: var(--text-muted);
     cursor: pointer;
-    border-left: 1px solid var(--border-color);
-    margin-right: 5px;
-    font-size: 0.95em;
-    outline: none;
+    font-size: 1em;
+    background-color: var(--bg-light);
+    appearance: none; /* Cache la flèche par défaut pour un look plus clean */
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20'%3E%3Cpath fill='%233b82f6' d='M9.293 12.95l.707.707L15.657 8l-1.414-1.414L10 10.828 5.757 6.586 4.343 8z'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    background-size: 12px;
 }
 
 .search-btn {
+    width: 100%; /* Prend toute la largeur sur mobile */
     background-color: var(--accent);
     color: white;
     border: none;
-    padding: 10px 20px;
+    padding: 15px;
     border-radius: var(--radius-md);
-    font-size: 1em;
-    font-weight: 600;
+    font-size: 1.1em;
+    font-weight: 700;
     cursor: pointer;
     transition: background-color 0.2s, transform 0.1s;
 }
 .search-btn:hover {
-    background-color: #2563eb;
+    background-color: var(--accent-hover);
 }
 .search-btn:active {
-    transform: scale(0.98);
+    transform: scale(0.99);
 }
 
-/* ================== RESULTS AREA ================== */
+
+/* ================== D. RESULTS AREA ================== */
 #results-area {
     width: 100%;
     max-width: 800px;
-    margin-top: 40px;
+    margin-top: 30px;
     text-align: left;
 }
 
@@ -183,27 +162,28 @@ h1 {
     color: var(--accent);
     margin-top: 20px;
     font-style: italic;
-    animation: pulse 1.5s infinite;
+    animation: bounce 1s infinite alternate;
+    font-weight: 600;
 }
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.5; }
+@keyframes bounce {
+    from { transform: translateY(0px); }
+    to { transform: translateY(-5px); }
 }
 
 .ai-card {
     background: var(--card-bg);
     border: 1px solid var(--border-color);
+    border-left: 5px solid var(--accent); /* Barre bleue pour un effet 'carte' */
     border-radius: var(--radius-md);
-    padding: 30px;
-    box-shadow: var(--shadow-light);
-    white-space: pre-wrap; /* Préserve le formatage de l'IA (sauts de ligne) */
+    padding: 25px;
+    box-shadow: var(--shadow-subtle);
+    white-space: pre-wrap;
     font-size: 1em;
-    line-height: 1.8;
+    line-height: 1.7;
 }
 
 #status-message {
-    padding: 10px 20px;
+    padding: 12px 20px;
     border-radius: var(--radius-md);
     margin: 15px auto;
     width: 100%;
@@ -216,49 +196,36 @@ h1 {
     border: 1px solid #fca5a5;
 }
 
-/* ================== RESPONSIVE (MOBILE) ================== */
-@media (max-width: 650px) {
-    header {
-        padding: 15px 20px;
-    }
-    h1 {
-        font-size: 2rem;
-    }
-    .subtitle {
-        font-size: 1em;
-        margin-bottom: 20px;
-    }
-
-    /* La barre de recherche s'empile */
+/* ================== E. ADAPTATION GRAND ÉCRAN (Desktop) ================== */
+@media (min-width: 651px) {
+    /* La barre de recherche passe en ligne */
     .search-container {
-        flex-direction: column;
-        padding: 10px;
-        max-width: 100%;
-        border: none; /* Enlever la bordure du container pour un look plus propre */
-        box-shadow: none;
-        background: transparent;
+        flex-direction: row;
+        padding: 5px;
+        gap: 5px;
     }
     
     #query-input {
-        border: 1px solid var(--border-color);
-        border-radius: var(--radius-md);
-        margin-bottom: 10px;
-        padding: 15px;
-    }
-    
-    .search-btn {
-        width: 100%;
-        padding: 15px;
-    }
-    
-    #language-select {
-        display: none; /* Cacher ou simplifier le sélecteur de langue sur petit écran */
+        border: none;
+        padding: 12px 15px;
+        border-radius: var(--radius-md) 0 0 var(--radius-md); /* Coins arrondis uniquement à gauche */
     }
 
-    #results-area {
-        margin-top: 20px;
+    #language-select {
+        width: auto; /* Taille automatique */
+        border: none;
+        border-left: 1px solid var(--border-color);
+        margin-right: 5px;
+        padding: 0 10px;
+        background-color: transparent;
     }
-    .ai-card {
-        padding: 20px;
+
+    .search-btn {
+        width: auto;
+        padding: 12px 25px;
+    }
+
+    h1 {
+        font-size: 3rem;
     }
 }
