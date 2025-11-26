@@ -48,7 +48,7 @@
                         <th>Pseudo</th>
                         <th>Email</th>
                         <th>Type</th>
-                        <th>Statut</th>
+                        <th>Rôle</th> <th>Statut</th>
                         <th>Actions</th>
                     </tr>
                 </thead>
@@ -70,30 +70,55 @@
 
         document.addEventListener('DOMContentLoaded', renderUsers);
 
+        // --- FONCTION DE RÉCUPÉRATION GLOBALE (MISE À JOUR) ---
         function getAllUsers() {
             let regularUsers = JSON.parse(localStorage.getItem(USERS_DB_KEY) || '[]');
             const blockedList = JSON.parse(localStorage.getItem(BLOCKED_USERS_KEY) || '[]');
 
-            // L'Admin est toujours en premier
+            // 1. Gère l'Admin
             const allUsers = [{ 
                 user: ADMIN_USER, 
                 email: "admin@omnisearch.com", 
                 type: 'admin', 
-                status: 'active' 
+                status: 'active',
+                role: 'Administrateur', // Rôle fixe
+                isVIP: true // VIP fixe
             }];
 
+            // 2. Gère les Utilisateurs Standards
             regularUsers.forEach(u => {
                 const status = blockedList.includes(u.user) ? 'blocked' : 'active';
+                
+                // Assure que les nouveaux champs existent
+                if (typeof u.role === 'undefined') u.role = 'Aucun';
+                if (typeof u.isVIP === 'undefined') u.isVIP = false;
+                
                 allUsers.push({
                     user: u.user,
                     email: u.email,
                     type: 'user',
-                    status: status
+                    status: status,
+                    role: u.role,
+                    isVIP: u.isVIP
                 });
             });
             return allUsers;
         }
 
+        function saveRegularUsers(users) {
+            // Filtre les utilisateurs pour ne garder que les non-admin (l'admin n'est pas stocké dans USERS_DB_KEY)
+            const regularUsers = users.filter(u => u.type === 'user').map(u => ({
+                user: u.user,
+                pass: u.pass || '', // Conserve le mot de passe s'il est présent (nécessaire pour la connexion)
+                email: u.email,
+                role: u.role,
+                isVIP: u.isVIP
+            }));
+            localStorage.setItem(USERS_DB_KEY, JSON.stringify(regularUsers));
+        }
+
+
+        // --- RENDU DU TABLEAU (MISE À JOUR) ---
         function renderUsers() {
             const users = getAllUsers();
             const search = document.getElementById('user-search').value.toLowerCase();
@@ -114,15 +139,20 @@
                 let statusClass = 'status-active';
                 if (isBlocked) statusClass = 'status-blocked';
                 if (u.type === 'admin') statusClass = 'status-pending'; 
+                
+                const roleDisplay = u.role === 'Aucun' ? 'Standard' : (u.role + (u.isVIP ? ' (VIP)' : ''));
+                const roleClass = u.role === 'Administrateur' ? 'status-blocked' : (u.isVIP ? 'status-active' : 'status-pending');
 
                 const row = tableBody.insertRow();
                 row.innerHTML = `
                     <td>${u.user}</td>
                     <td>${u.email}</td>
                     <td>${u.type === 'admin' ? 'Administrateur' : 'Standard'}</td>
-                    <td><span class="account-status ${statusClass}">${u.status.toUpperCase()}</span></td>
+                    <td><span class="account-status ${roleClass}">${roleDisplay}</span></td> <td><span class="account-status ${statusClass}">${u.status.toUpperCase()}</span></td>
                     <td>
                         ${isUser ? `
+                            <button class="action-btn btn-edit" 
+                                onclick="openRoleManagement('${u.user}')">Gérer Rôles</button>
                             <button class="action-btn ${isBlocked ? 'btn-unblock' : 'btn-block'}" 
                                 onclick="toggleBlock('${u.user}')">
                                 ${isBlocked ? 'Débloquer' : 'Bloquer'}
@@ -134,16 +164,66 @@
                 `;
             });
         }
+        
+        // --- NOUVELLE FONCTION DE GESTION DE RÔLES/VIP ---
+        function openRoleManagement(pseudo) {
+            let users = getAllUsers();
+            let userToUpdate = users.find(u => u.user === pseudo);
+
+            if (!userToUpdate) return alert("Erreur: Utilisateur non trouvé.");
+
+            const currentRole = userToUpdate.role || 'Aucun';
+            const currentVIP = userToUpdate.isVIP ? 'Oui' : 'Non';
+
+            const newRole = prompt(`
+                Gérer les Rôles et Statut VIP pour l'utilisateur: ${pseudo}
+                
+                Rôle actuel: ${currentRole}
+                VIP actuel: ${currentVIP}
+
+                Entrez le nouveau Rôle (Admin, Modérateur, Staff, Help, Aucun):
+            `, currentRole);
+
+            if (newRole === null) return; // Annulation
+
+            const validRoles = ['Admin', 'Modérateur', 'Staff', 'Help', 'Aucun'];
+            const normalizedRole = newRole.charAt(0).toUpperCase() + newRole.slice(1).toLowerCase();
+
+            if (!validRoles.includes(normalizedRole)) {
+                alert("Rôle non valide. Le rôle doit être: Admin, Modérateur, Staff, Help, ou Aucun.");
+                return;
+            }
+
+            const newVIPInput = prompt(`
+                Mettre à jour le statut VIP pour l'utilisateur: ${pseudo}
+                (Statut actuel: ${currentVIP})
+
+                Entrez OUI pour activer, NON pour désactiver.
+            `, currentVIP);
+
+            if (newVIPInput === null) return; // Annulation
+
+            const newVIP = newVIPInput.trim().toUpperCase() === 'OUI';
+            
+            // Mise à jour locale
+            userToUpdate.role = normalizedRole;
+            userToUpdate.isVIP = newVIP;
+
+            // Sauvegarde dans le localStorage
+            saveRegularUsers(users);
+            
+            alert(`Rôles de ${pseudo} mis à jour:\n- Rôle: ${normalizedRole}\n- VIP: ${newVIP ? 'Activé' : 'Désactivé'}`);
+            renderUsers(); // Re-render le tableau
+        }
+        // --- FIN NOUVELLE FONCTION ---
 
         function toggleBlock(pseudo) {
             let blockedList = JSON.parse(localStorage.getItem(BLOCKED_USERS_KEY) || '[]');
             
             if (blockedList.includes(pseudo)) {
-                // Débloquer
                 blockedList = blockedList.filter(u => u !== pseudo);
                 alert(`Utilisateur ${pseudo} DÉBLOQUÉ.`);
             } else {
-                // Bloquer
                 blockedList.push(pseudo);
                 alert(`Utilisateur ${pseudo} BLOQUÉ.`);
             }
@@ -155,10 +235,14 @@
         function deleteUser(pseudo) {
             if (!confirm(`Êtes-vous sûr de vouloir supprimer l'utilisateur ${pseudo} ?`)) return;
 
-            // 1. Supprimer de la DB REGULAR_USERS
             let regularUsers = JSON.parse(localStorage.getItem(USERS_DB_KEY) || '[]');
-            regularUsers = regularUsers.filter(u => u.user !== pseudo);
-            localStorage.setItem(USERS_DB_KEY, JSON.stringify(regularUsers));
+            
+            // Récupère l'ensemble complet des utilisateurs (Admin inclus, pour l'affichage)
+            let allUsers = getAllUsers();
+            
+            // 1. Supprimer de la DB REGULAR_USERS
+            allUsers = allUsers.filter(u => u.user !== pseudo);
+            saveRegularUsers(allUsers); // Sauvegarde la liste filtrée sans l'utilisateur
 
             // 2. Supprimer de la liste de blocage au cas où
             let blockedList = JSON.parse(localStorage.getItem(BLOCKED_USERS_KEY) || '[]');
