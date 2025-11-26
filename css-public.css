@@ -282,3 +282,54 @@ h1 {
     background-color: #fff3cd;
     color: #856404;
 }
+
+/* =========================================
+   STYLES AJOUTÉS POUR LE MOBILE DANS style.css
+   ========================================= */
+
+/* Réduire la taille de la police et du padding sur les petits écrans */
+@media (max-width: 600px) {
+    /* 1. Entête et Titres */
+    header {
+        padding: 15px 10px;
+        flex-direction: column; /* Empile l'info utilisateur et le lien */
+        align-items: flex-start;
+    }
+    .admin-link, #user-info {
+        font-size: 0.8em;
+        margin-top: 5px;
+    }
+
+    /* 2. Formulaire de Recherche (Élément principal) */
+    .search-container {
+        flex-direction: column; /* Empile les éléments du formulaire */
+        gap: 10px;
+        padding: 0 10px;
+    }
+    
+    #query-input {
+        min-height: 45px;
+    }
+
+    /* Le bouton de recherche prend toute la largeur */
+    .search-btn, #language-select {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    /* 3. Résultat de l'IA */
+    .ai-card {
+        padding: 15px;
+        font-size: 0.9em;
+    }
+
+    /* 4. Écrans Overlay (Maintenance/Bloqué) */
+    .overlay-screen {
+        padding: 20px;
+        text-align: center;
+    }
+    .overlay-screen h2 {
+        font-size: 1.5em;
+    }
+}
+
