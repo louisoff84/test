@@ -3,168 +3,271 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Mode Hébergement 🌐 - OmniSearch AI</title>
+    <title>OmniSearch AI - Moteur de Recherche</title>
     <link rel="stylesheet" href="css-public.css"> 
-    <style>
-        .hosting-container { 
-            background-color: #f7f7f7; 
-            min-height: 100vh;
-            padding: 50px 20px;
-            text-align: center;
-        }
-        .hosting-card {
-            background: var(--card-bg); 
-            border: 1px solid #ddd; 
-            border-radius: 10px; 
-            padding: 30px; 
-            max-width: 600px; 
-            margin: 30px auto; 
-            box-shadow: var(--shadow);
-            text-align: left;
-        }
-        .hosting-card h2 {
-            color: var(--accent-color);
-            margin-bottom: 20px;
-        }
-        .hosting-card label {
-            display: block;
-            margin-bottom: 8px;
-            font-weight: bold;
-        }
-        .hosting-card input[type="text"] {
-            width: 100%;
-            padding: 10px;
-            border: 1px solid #ccc;
-            border-radius: 5px;
-            margin-bottom: 20px;
-            font-size: 1em;
-        }
-        .hosting-card .btn-primary {
-            width: 100%;
-        }
-    </style>
 </head>
-<body class="hosting-container">
+<body>
 
-    <header>
-        <nav style="display: flex; justify-content: space-between; align-items: center; padding: 10px 0;">
-            <a href="index.html" style="text-decoration: none;">← Retour à l'accueil</a>
-            <span id="user-info-hosting"></span>
-            <a href="#" onclick="logout()" style="color: var(--danger-color);">Déconnexion</a>
-        </nav>
-    </header>
+    <div id="blocked-screen" class="overlay-screen" style="display: none;">
+        <div class="overlay-icon">⛔</div>
+        <h2>Accès Refusé</h2>
+        <p>Votre compte a été bloqué par un administrateur. Contactez le support pour plus d'informations.</p>
+        <br>
+        <a href="#" onclick="logout()" style="color:#4285f4;">Se Déconnecter</a>
+    </div>
 
-    <main class="hosting-card">
-        <h2>Générateur de Fichier HTML Simple</h2>
-        <p style="margin-bottom: 30px; color: #7f8c8d;">
-            Créez un fichier HTML de base, automatiquement lié à votre feuille de style `css-public.css`. 
-            Ceci est parfait pour démarrer un nouveau projet local.
-        </p>
+    <div id="maintenance-screen" class="overlay-screen" style="display: none;">
+        <div class="overlay-icon">🚧</div>
+        <h2>Site en Maintenance</h2>
+        <p>Nous effectuons actuellement des mises à jour importantes. Le service sera de retour très bientôt.</p>
+        <br>
+        <a href="login.html" style="color:#4285f4;">Accès Admin</a>
+    </div>
 
-        <label for="site-name-input">Nom du Site (sera le nom du fichier)</label>
-        <input type="text" id="site-name-input" placeholder="Ex: mon-nouveau-site" required>
+    <div id="main-content">
+        <header style="display: flex; justify-content: flex-end; padding-top: 15px; padding-right: 15px;">
+            <span id="user-info" style="margin-right: 20px;"></span>
+            <a href="shop.html" class="admin-link" style="margin-right: 20px;">🎁 Boutique & Giveaways</a>
+            <a href="login.html" class="admin-link" id="login-link">Connexion</a> 
+        </header>
 
-        <button class="btn-primary" onclick="generateAndDownload()">Générer et Télécharger le Fichier HTML</button>
-        
-        <p id="status-message" style="margin-top: 20px; text-align: center; color: var(--success-color); font-weight: bold; display: none;">✅ Fichier généré avec succès !</p>
-    </main>
-    
+        <main>
+            <h1>OmniSearch AI 🧠</h1>
+            <p class="subtitle">Explorez les livres, les films et le savoir mondial grâce à l'IA.</p>
+
+            <nav class="mode-nav">
+                <a href="index.html" style="background-color: #3498db; color: white;">Mode Standard</a>
+                <a href="pro_mode.html">Mode Pro 💼</a>
+                <a href="agent_mode.html">Mode Agent 🕵️</a>
+                <a href="hosting_mode.html">Mode Hébergement 🌐</a> 
+            </nav>
+
+            <div class="search-container">
+                <input type="text" id="query-input" placeholder="Posez votre question...">
+                
+                <select id="language-select">
+                    <option value="fr" selected>FR</option>
+                    <option value="en">EN</option>
+                    <option value="es">ES</option>
+                </select>
+
+                <button class="search-btn" onclick="performGeneralAiSearch()" style="background-color: #2ecc71;">Rechercher (Groq)</button>
+            </div>
+            
+            <div class="search-container" style="margin-top: 15px; max-width: 650px; background: #ecf0f1; height: 55px; box-shadow: 0 2px 8px rgba(0,0,0,0.05);">
+                <input type="text" id="site-ai-query-input" placeholder="Demander à l'IA du Site (Aide, Rôles, etc.)" style="border: none;">
+                <button class="search-btn" onclick="performSiteAiSearch()" style="background-color: #e67e22; padding: 0 15px;">Demander au Site AI</button>
+            </div>
+
+
+            <div id="status-message" style="display: none; margin-top: 15px;"></div>
+
+            <div id="results-area" style="margin-top: 20px;">
+                <div id="loading-indicator" class="loading" style="display: none;">
+                    L'IA réfléchit et rédige votre réponse... 🤖
+                </div>
+                <div id="ai-response" class="ai-card" style="display: none;">
+                    </div>
+            </div>
+        </main>
+    </div>
+
     <script>
-        const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
-        const STORAGE_CURRENT_USER = 'currentUser';
+        // ============================================
+        // CONFIGURATION (DEUX CLÉS D'API)
+        // ============================================
         
+        // 1. Clé pour la recherche générale (Groq, expert mondial)
+        const GROQ_API_KEY = "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"; 
+        const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
+        const GROQ_MODEL = "llama-3.1-8b-instant"; 
+        
+        // 2. Clé pour l'IA du site (spécialisée en aide/règles)
+        const SITE_AI_API_KEY = "VOTRE_SECONDE_CLE_API_ICI"; 
+        const SITE_AI_MODEL = "mixtral-8x7b-instruct"; // Exemple d'un modèle différent
+
+        const STORAGE_MAINTENANCE_SITE = 'siteMaintenance';
+        const STORAGE_MAINTENANCE_IA = 'iaMaintenance';
+        const STORAGE_BLOCKED_USERS = 'blockedUsers';
+        const STORAGE_CURRENT_USER = 'currentUser';
+        const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
+
+        // ============================================
+        // 1. VÉRIFICATION D'ACCÈS ET STATUT (Identique)
+        // ============================================
         document.addEventListener('DOMContentLoaded', () => {
-            checkAccess();
+            checkSystemStatus();
+            updateLoginUI();
+            
+            // Écouteur pour la recherche générale (touche Entrée)
+            document.getElementById('query-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    performGeneralAiSearch();
+                }
+            });
+
+            // Écouteur pour l'IA du site (touche Entrée)
+            document.getElementById('site-ai-query-input').addEventListener('keypress', function (e) {
+                if (e.key === 'Enter') {
+                    performSiteAiSearch();
+                }
+            });
         });
 
-        function checkAccess() {
+        function updateLoginUI() {
             const isLoggedIn = localStorage.getItem(STORAGE_IS_LOGGED_IN) === 'true';
             const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
-
-            if (!isLoggedIn) {
-                alert("Accès refusé. Veuillez vous connecter.");
-                window.location.href = 'login.html';
-                return;
+            const loginLink = document.getElementById('login-link');
+            const userInfo = document.getElementById('user-info');
+            
+            if (isLoggedIn) {
+                loginLink.textContent = "Déconnexion";
+                loginLink.onclick = logout;
+                loginLink.href = "#"; 
+                userInfo.textContent = `Connecté: ${currentUser} |`;
+            } else {
+                loginLink.textContent = "Connexion";
+                loginLink.href = "login.html";
+                loginLink.onclick = null;
+                userInfo.textContent = "";
             }
-
-            document.getElementById('user-info-hosting').textContent = `Connecté: ${currentUser}`;
         }
 
         function logout() {
             localStorage.removeItem(STORAGE_IS_LOGGED_IN);
             localStorage.removeItem(STORAGE_CURRENT_USER);
-            window.location.href = 'index.html';
+            localStorage.removeItem('currentUserType'); 
+            window.location.href = 'index.html'; 
         }
 
-        // --- FONCTION PRINCIPALE DE GÉNÉRATION ---
-        function generateAndDownload() {
-            const nameInput = document.getElementById('site-name-input');
-            const statusMsg = document.getElementById('status-message');
-            let baseName = nameInput.value.trim();
-
-            statusMsg.style.display = 'none';
-
-            if (!baseName) {
-                alert("Veuillez donner un nom à votre site.");
-                return;
+        function checkSystemStatus() {
+            const currentUser = localStorage.getItem(STORAGE_CURRENT_USER) || 'anonyme'; 
+            const siteMaint = localStorage.getItem(STORAGE_MAINTENANCE_SITE) === 'true';
+            const blockedUsers = JSON.parse(localStorage.getItem(STORAGE_BLOCKED_USERS) || '[]');
+            
+            const mainContent = document.getElementById('main-content');
+            
+            if (siteMaint) {
+                document.getElementById('maintenance-screen').style.display = 'flex';
+                mainContent.style.display = 'none';
+                return; 
             }
             
-            // Assure que le nom de fichier est propre (sans espaces, sans caractères spéciaux)
-            baseName = baseName.replace(/[^a-z0-9]/gi, '-').toLowerCase();
+            if (blockedUsers.includes(currentUser)) {
+                document.getElementById('blocked-screen').style.display = 'flex';
+                mainContent.style.display = 'none';
+                return;
+            }
 
-            const fileName = `${baseName}.html`;
-            const pageTitle = baseName.replace(/-/g, ' ').toUpperCase();
-
-            // --- CONTENU DU FICHIER HTML ---
-            const htmlContent = `<!DOCTYPE html>
-<html lang="fr">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>${pageTitle}</title>
-    
-    <link rel="stylesheet" href="css-public.css"> 
-    
-    <style>
-        /* Ajoutez vos styles spécifiques ici si besoin */
-        #content-wrapper {
-            max-width: 800px;
-            margin: 50px auto;
-            padding: 30px;
-            background-color: white;
-            border-radius: 8px;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
-            text-align: center;
+            mainContent.style.display = 'block';
         }
-        h1 { color: var(--accent-color); }
-    </style>
-</head>
-<body>
-    <div id="content-wrapper">
-        <h1>Bienvenue sur ${pageTitle}</h1>
-        <p>Ceci est un site simple, hébergé localement, utilisant le style de base d'OmniSearch (fichier css-public.css).</p>
-        <p>Pour voir le style, assurez-vous que 'css-public.css' se trouve dans le même dossier que ce fichier.</p>
-        <button style="padding: 10px 20px; background-color: var(--success-color); color: white; border: none; border-radius: 5px; margin-top: 15px;">Bouton Test Style</button>
-    </div>
-</body>
-</html>`;
-            
-            // --- CRÉATION DU BLOB ET TÉLÉCHARGEMENT ---
-            const blob = new Blob([htmlContent], { type: 'text/html' });
-            const a = document.createElement('a');
-            a.href = URL.createObjectURL(blob);
-            a.download = fileName;
-            
-            // Simule un clic pour démarrer le téléchargement
-            document.body.appendChild(a);
-            a.click();
-            document.body.removeChild(a);
-            
-            statusMsg.textContent = `✅ Fichier ${fileName} généré et téléchargé avec succès !`;
-            statusMsg.style.display = 'block';
 
-            // Réinitialiser le champ
-            nameInput.value = '';
+        // ============================================
+        // 2. NOUVELLE FONCTION DE RECHERCHE GÉNÉRALE (GROQ)
+        // ============================================
+        async function performGeneralAiSearch() {
+            const queryInput = document.getElementById('query-input');
+            const query = queryInput.value.trim();
+            const lang = document.getElementById('language-select').value;
+
+            const systemPrompt = `Tu es un assistant expert en livres, films, culture et savoir général. 
+            Réponds à la question de manière structurée, claire et utile. 
+            Réponds obligatoirement dans la langue : ${lang}.
+            Si la question porte sur un livre, donne le titre, l'auteur, l'année et un résumé.`;
+            
+            await fetchAiResponse(GROQ_API_KEY, GROQ_MODEL, query, systemPrompt);
+        }
+
+        // ============================================
+        // 3. NOUVELLE FONCTION IA DU SITE (API DÉDIÉE)
+        // ============================================
+        async function performSiteAiSearch() {
+            const queryInput = document.getElementById('site-ai-query-input');
+            const query = queryInput.value.trim();
+            const lang = document.getElementById('language-select').value;
+
+            // Prompt plus spécifique aux règles du site / fonctionnalités
+            const systemPrompt = `Tu es l'assistant de support du site OmniSearch. Réponds uniquement aux questions concernant la plateforme (règles, modes, connexion, boutique, gestion des comptes). 
+            Si la question n'est pas pertinente, réponds poliment que tu ne peux pas aider. 
+            Réponds obligatoirement dans la langue : ${lang}.`;
+            
+            // Note: J'utilise l'URL Groq par défaut pour simplifier, mais on pourrait changer l'URL si la seconde clé est une autre plateforme.
+            await fetchAiResponse(SITE_AI_API_KEY, SITE_AI_MODEL, query, systemPrompt);
+        }
+
+        // ============================================
+        // 4. FONCTION UTILITAIRE DE FETCH (Réutilisable)
+        // ============================================
+        async function fetchAiResponse(apiKey, model, query, systemPrompt) {
+            const resultsArea = document.getElementById('results-area');
+            const loading = document.getElementById('loading-indicator');
+            const responseDiv = document.getElementById('ai-response');
+            const statusMsg = document.getElementById('status-message');
+
+            statusMsg.style.display = 'none';
+            responseDiv.style.display = 'none';
+            responseDiv.textContent = '';
+            
+            if (!query) {
+                alert("Veuillez écrire quelque chose !");
+                return;
+            }
+
+            const iaMaint = localStorage.getItem(STORAGE_MAINTENANCE_IA) === 'true';
+            if (iaMaint) {
+                statusMsg.textContent = "⚠️ La recherche IA est temporairement en maintenance. Revenez plus tard.";
+                statusMsg.className = "error";
+                statusMsg.style.display = 'block';
+                return;
+            }
+
+            if (apiKey === "VOTRE_CLE_API_GROQ_ICI" || apiKey === "VOTRE_SECONDE_CLE_API_ICI" || !apiKey) {
+                 const keyName = apiKey === GROQ_API_KEY ? 'Groq (Générale)' : 'Site AI (Spécialisée)';
+                 statusMsg.textContent = `Erreur Configuration : Clé API ${keyName} manquante. Veuillez insérer votre clé.`;
+                 statusMsg.className = "error";
+                 statusMsg.style.display = 'block';
+                 return;
+            }
+
+            resultsArea.style.display = 'block';
+            loading.style.display = 'block';
+
+            try {
+                const response = await fetch(GROQ_API_URL, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        model: model, 
+                        messages: [
+                            { role: "system", content: systemPrompt },
+                            { role: "user", content: query }
+                        ],
+                        temperature: 0.7,
+                        max_tokens: 1024
+                    })
+                });
+
+                const data = await response.json();
+
+                if (data.error) {
+                    throw new Error(data.error.message);
+                }
+
+                const aiText = data.choices[0].message.content;
+                loading.style.display = 'none';
+                responseDiv.style.display = 'block';
+                responseDiv.textContent = aiText;
+
+            } catch (error) {
+                loading.style.display = 'none';
+                statusMsg.textContent = `Erreur IA : ${error.message}. Vérifiez la clé API ou le nom du modèle Groq.`;
+                statusMsg.className = "error";
+                statusMsg.style.display = 'block';
+                console.error(error);
+            }
         }
     </script>
 </body>
