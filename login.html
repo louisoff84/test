@@ -41,6 +41,7 @@
         const ADMIN_USER = "admin";
         const ADMIN_PASS = "1234"; // Identifiants Admin
         const USERS_DB_KEY = 'REGULAR_USERS'; // Clé de stockage pour les utilisateurs créés via register.html
+        const BLOCKED_USERS_KEY = 'blockedUsers'; // Clé de stockage pour les utilisateurs bloqués
         const SUCCESS_MSG_KEY = 'registrationSuccess'; // Clé pour le message de succès post-inscription
         const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
         const STORAGE_CURRENT_USER = 'currentUser';
@@ -68,12 +69,12 @@
 
             // 2. VÉRIFICATION UTILISATEUR STANDARD (chargé depuis la DB créée par register.html)
             const regularUsers = JSON.parse(localStorage.getItem(USERS_DB_KEY) || '[]');
-            const foundUser = regularUsers.find(u => u.user === inputUser && u.pass === inputPass);
-
-            if (foundUser) {
-                 // 2a. Vérification si l'utilisateur est bloqué (utilise la liste admin)
-                 const blockedUsers = JSON.parse(localStorage.getItem('blockedUsers') || '[]');
-                 if (blockedUsers.includes(inputUser)) {
+            const foundUser = regularUsers.find(u => u.user === inputUser || u.email === inputUser); // Connexion par pseudo OU email
+            
+            if (foundUser && foundUser.pass === inputPass) {
+                 // 2a. Vérification si l'utilisateur est bloqué
+                 const blockedUsers = JSON.parse(localStorage.getItem(BLOCKED_USERS_KEY) || '[]');
+                 if (blockedUsers.includes(foundUser.user)) {
                     errorMsg.textContent = "Votre compte a été bloqué par un administrateur.";
                     return;
                  }
@@ -81,7 +82,7 @@
                 // Succès Utilisateur Standard
                 localStorage.setItem(STORAGE_IS_LOGGED_IN, 'true');
                 localStorage.setItem('currentUserType', 'user');
-                localStorage.setItem(STORAGE_CURRENT_USER, inputUser); 
+                localStorage.setItem(STORAGE_CURRENT_USER, foundUser.user); 
                 window.location.href = 'index.html'; 
                 return;
             }
