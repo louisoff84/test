@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniSearch AI - Recherche de Livres & Savoir</title>
+    <title>OmniSearch AI - Moteur de Recherche</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -11,20 +11,23 @@
     <div id="blocked-screen" class="overlay-screen" style="display: none;">
         <div class="overlay-icon">⛔</div>
         <h2>Accès Refusé</h2>
-        <p>Votre compte ou votre adresse IP a été bloqué par l'administrateur.</p>
+        <p>Votre compte a été bloqué par un administrateur. Contactez le support pour plus d'informations.</p>
+        <br>
+        <a href="#" onclick="logout()" style="color:#4285f4;">Se Déconnecter</a>
     </div>
 
     <div id="maintenance-screen" class="overlay-screen" style="display: none;">
         <div class="overlay-icon">🚧</div>
         <h2>Site en Maintenance</h2>
-        <p>Nous effectuons actuellement des mises à jour. Le site sera de retour très bientôt.</p>
+        <p>Nous effectuons actuellement des mises à jour importantes. Le service sera de retour très bientôt.</p>
         <br>
         <a href="login.html" style="color:#4285f4;">Accès Admin</a>
     </div>
 
     <div id="main-content">
         <header>
-            <a href="login.html" class="admin-link">Connexion Admin</a>
+            <span id="user-info" style="margin-right: 20px;"></span>
+            <a href="login.html" class="admin-link" id="login-link">Connexion</a>
         </header>
 
         <main>
@@ -38,7 +41,6 @@
                     <option value="fr" selected>FR</option>
                     <option value="en">EN</option>
                     <option value="es">ES</option>
-                    <option value="de">DE</option>
                 </select>
 
                 <button class="search-btn" onclick="performGroqSearch()">Rechercher</button>
@@ -66,19 +68,22 @@
         
         const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
         
-        // NOUVEAU MODÈLE DEMANDÉ
+        // MODÈLE ACTUEL RECOMMANDÉ
         const GROQ_MODEL = "llama-3.1-8b-instant"; 
         
         // Clés de stockage (DOIVENT CORRESPONDRE À ADMIN.HTML)
         const STORAGE_MAINTENANCE_SITE = 'siteMaintenance';
         const STORAGE_MAINTENANCE_IA = 'iaMaintenance';
         const STORAGE_BLOCKED_USERS = 'blockedUsers';
+        const STORAGE_CURRENT_USER = 'currentUser';
+        const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
 
         // ============================================
-        // 1. VÉRIFICATION D'ACCÈS (Au chargement)
+        // 1. VÉRIFICATION D'ACCÈS ET STATUT
         // ============================================
         document.addEventListener('DOMContentLoaded', () => {
             checkSystemStatus();
+            updateLoginUI();
             
             // Permet de lancer la recherche avec la touche "Entrée"
             document.getElementById('query-input').addEventListener('keypress', function (e) {
@@ -88,24 +93,55 @@
             });
         });
 
+        function updateLoginUI() {
+            const isLoggedIn = localStorage.getItem(STORAGE_IS_LOGGED_IN) === 'true';
+            const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
+            const loginLink = document.getElementById('login-link');
+            const userInfo = document.getElementById('user-info');
+            
+            if (isLoggedIn) {
+                loginLink.textContent = "Déconnexion";
+                loginLink.onclick = logout;
+                loginLink.href = "#"; // Annuler l'href
+                userInfo.textContent = `Bienvenue, ${currentUser} |`;
+            } else {
+                loginLink.textContent = "Connexion";
+                loginLink.href = "login.html";
+                loginLink.onclick = null;
+                userInfo.textContent = "";
+            }
+        }
+
+        function logout() {
+            localStorage.removeItem(STORAGE_IS_LOGGED_IN);
+            localStorage.removeItem(STORAGE_CURRENT_USER);
+            localStorage.removeItem('currentUserType'); // Nettoyer le type
+            window.location.href = 'index.html'; // Recharger la page
+        }
+
         function checkSystemStatus() {
-            // 1. Vérifier si l'utilisateur est bloqué (Simulation pseudo)
-            const currentUser = localStorage.getItem('currentUser') || 'anonyme'; 
+            const currentUser = localStorage.getItem(STORAGE_CURRENT_USER) || 'anonyme'; 
+            const siteMaint = localStorage.getItem(STORAGE_MAINTENANCE_SITE) === 'true';
             const blockedUsers = JSON.parse(localStorage.getItem(STORAGE_BLOCKED_USERS) || '[]');
             
-            if (blockedUsers.includes(currentUser)) {
-                document.getElementById('blocked-screen').style.display = 'flex';
-                document.getElementById('main-content').style.display = 'none';
-                return; // On arrête tout
-            }
-
-            // 2. Vérifier la Maintenance du Site Global
-            const siteMaint = localStorage.getItem(STORAGE_MAINTENANCE_SITE) === 'true';
+            const mainContent = document.getElementById('main-content');
             
+            // 1. Vérification Maintenance Site Global
             if (siteMaint) {
                 document.getElementById('maintenance-screen').style.display = 'flex';
-                document.getElementById('main-content').style.display = 'none';
+                mainContent.style.display = 'none';
+                return; 
             }
+            
+            // 2. Vérification Utilisateur Bloqué
+            if (blockedUsers.includes(currentUser)) {
+                document.getElementById('blocked-screen').style.display = 'flex';
+                mainContent.style.display = 'none';
+                return;
+            }
+
+            // Si tout va bien, afficher le contenu
+            mainContent.style.display = 'block';
         }
 
         // ============================================
@@ -131,7 +167,7 @@
                 return;
             }
 
-            // 2. Vérification Maintenance IA (Spécifique à la recherche)
+            // 2. Vérification Maintenance IA
             const iaMaint = localStorage.getItem(STORAGE_MAINTENANCE_IA) === 'true';
             if (iaMaint) {
                 statusMsg.textContent = "⚠️ La recherche IA est temporairement en maintenance. Revenez plus tard.";
@@ -142,7 +178,7 @@
 
             // 3. Vérification Clé API
             if (GROQ_API_KEY === "VOTRE_CLE_API_GROQ_ICI" || !GROQ_API_KEY) {
-                statusMsg.textContent = "Erreur Configuration : Clé API manquante dans le code.";
+                statusMsg.textContent = "Erreur Configuration : Clé API manquante. Veuillez insérer votre clé Groq.";
                 statusMsg.className = "error";
                 statusMsg.style.display = 'block';
                 return;
@@ -152,7 +188,7 @@
             resultsArea.style.display = 'block';
             loading.style.display = 'block';
 
-            // Prompt Système pour guider l'IA
+            // Prompt Système
             const systemPrompt = `Tu es un assistant expert en livres, films, culture et savoir général. 
             Réponds à la question de manière structurée, claire et utile. 
             Réponds obligatoirement dans la langue : ${lang}.
@@ -166,7 +202,7 @@
                         'Content-Type': 'application/json'
                     },
                     body: JSON.stringify({
-                        model: GROQ_MODEL, // Utilisation du nouveau modèle ici
+                        model: GROQ_MODEL, 
                         messages: [
                             { role: "system", content: systemPrompt },
                             { role: "user", content: query }
