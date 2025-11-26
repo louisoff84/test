@@ -15,12 +15,9 @@
         <nav>
             <ul>
                 <li class="active"><a href="admin.html">Tableau de Bord</a></li> 
-                
                 <li><a href="account_management.html">Gestion des Comptes</a></li>
-                
+                <li><a href="shop_admin.html">Gestion des Giveaways</a></li> 
                 <li><a href="#" onclick="alert('Page Analytiques en cours de développement !')" style="opacity:0.9;">Analytiques (Simulé)</a></li>
-                
-                <li><a href="#" style="opacity:0.5; cursor:not-allowed">Logs API (Bientôt)</a></li>
             </ul>
         </nav>
         <div class="logout-area">
@@ -41,10 +38,10 @@
                     <h2>📈 Statistiques Clés</h2>
                 </div>
                 <div class="card-body">
-                    <p><strong>Comptes Totaux :</strong> <span id="total-users">4</span></p>
-                    <p><strong>Utilisateurs Actifs :</strong> <span id="active-users">3</span></p>
+                    <p><strong>Comptes Totaux :</strong> <span id="total-users">0</span></p>
+                    <p><strong>Utilisateurs Actifs :</strong> <span id="active-users">0</span></p>
                     <hr style="margin: 10px 0;">
-                    <p><strong>Requêtes IA Aujourd'hui :</strong> <span id="ia-requests">450</span></p>
+                    <p><strong>Requêtes IA Aujourd'hui :</strong> <span id="ia-requests">0</span></p>
                     <p><strong>Statut Clé API :</strong> <span style="color: var(--success-color); font-weight: bold;">Connectée</span></p>
                 </div>
             </div>
@@ -105,21 +102,20 @@
     <script>
         // --- VÉRIFICATION DE SÉCURITÉ ET CONSTANTES ---
         if (localStorage.getItem('isLoggedIn') !== 'true' || localStorage.getItem('currentUserType') !== 'admin') {
-            window.location.href = 'login.html'; // S'assurer que seul l'admin y accède
+            window.location.href = 'login.html'; 
         }
 
-        // Constantes (Doivent correspondre à index.html et account_management.html)
         const STORAGE_MAINTENANCE_SITE = 'siteMaintenance';
         const STORAGE_MAINTENANCE_IA = 'iaMaintenance';
         const STORAGE_BLOCKED_USERS = 'blockedUsers';
-        const STORAGE_USERS_DB = 'REGULAR_USERS'; // Utilisé pour l'affichage des comptes
+        const STORAGE_USERS_DB = 'REGULAR_USERS'; 
+        const ADMIN_USER = "admin";
 
         // 1. CHARGEMENT AU DÉMARRAGE
         document.addEventListener('DOMContentLoaded', () => {
             loadMaintenanceStatus();
             loadAndRenderStats();
             
-            // Ajouter les écouteurs d'événements pour sauvegarder dès qu'on clique
             document.getElementById('site-maintenance-toggle').addEventListener('change', saveMaintenanceStatus);
             document.getElementById('ia-maintenance-toggle').addEventListener('change', saveMaintenanceStatus);
         });
@@ -147,13 +143,12 @@
             const blockedUsers = JSON.parse(localStorage.getItem(STORAGE_BLOCKED_USERS) || '[]');
             
             const totalUsers = usersDB.length + 1; // +1 pour l'admin
-            const activeUsers = usersDB.filter(u => !blockedUsers.includes(u.user)).length + 1; // +1 pour l'admin
+            const activeUsers = usersDB.filter(u => !blockedUsers.includes(u.user)).length + 1; 
 
             document.getElementById('total-users').textContent = totalUsers;
             document.getElementById('active-users').textContent = activeUsers;
             document.getElementById('blocked-count').textContent = blockedUsers.length;
             
-            // Données aléatoires pour simuler l'analytique IA
             document.getElementById('ia-requests').textContent = Math.floor(Math.random() * 500 + 300);
         }
 
@@ -164,27 +159,25 @@
             const pseudo = input.value.trim();
 
             if (!pseudo) return alert("Veuillez entrer un pseudo.");
-            if (pseudo === 'admin') return alert("L'administrateur ne peut pas être bloqué ici.");
+            if (pseudo === ADMIN_USER) return alert("L'administrateur ne peut pas être bloqué ici.");
 
             let blockedList = JSON.parse(localStorage.getItem(STORAGE_BLOCKED_USERS) || '[]');
             let usersDB = JSON.parse(localStorage.getItem(STORAGE_USERS_DB) || '[]');
-            const userIndex = usersDB.findIndex(u => u.user === pseudo);
+            const userExists = usersDB.some(u => u.user === pseudo);
+
+            if (!userExists) return alert("Erreur : Utilisateur non trouvé dans la base de données.");
 
             if (blockedList.includes(pseudo)) {
                 // Débloquer
                 blockedList = blockedList.filter(u => u !== pseudo);
-                if (userIndex !== -1) usersDB[userIndex].status = 'active';
                 alert(`Utilisateur '${pseudo}' DÉBLOQUÉ.`);
             } else {
                 // Bloquer
                 blockedList.push(pseudo);
-                if (userIndex !== -1) usersDB[userIndex].status = 'blocked';
                 alert(`Utilisateur '${pseudo}' BLOQUÉ et ajouté à la liste noire.`);
             }
 
-            // Sauvegarde
             localStorage.setItem(STORAGE_BLOCKED_USERS, JSON.stringify(blockedList));
-            localStorage.setItem(STORAGE_USERS_DB, JSON.stringify(usersDB));
             
             input.value = '';
             loadAndRenderStats(); // Mettre à jour le compteur
