@@ -2,14 +2,14 @@
    VARIABLES ET BASE
    ========================================= */
 :root {
-    --primary-color: #2c3e50;    /* Bleu/Gris foncé pour la sidebar et les boutons principaux */
-    --accent-color: #3498db;     /* Bleu vif pour les liens et titres secondaires */
-    --danger-color: #e74c3c;     /* Rouge pour la déconnexion et les alertes */
-    --success-color: #2ecc71;    /* Vert pour les statuts actifs */
-    --warning-color: #f1c40f;    /* Jaune/Orange pour les alertes/édition */
-    --bg-color: #ecf0f1;         /* Fond principal gris clair */
-    --card-bg: #ffffff;          /* Fond des cartes et du login */
-    --text-color: #34495e;       /* Texte principal */
+    --primary-color: #2c3e50;    
+    --accent-color: #3498db;     
+    --danger-color: #e74c3c;     
+    --success-color: #2ecc71;    
+    --warning-color: #f1c40f;    
+    --bg-color: #ecf0f1;         
+    --card-bg: #ffffff;          
+    --text-color: #34495e;       
 }
 
 * {
@@ -51,7 +51,7 @@ body {
 
 .form-group { text-align: left; margin-bottom: 20px; }
 .form-group label { display: block; margin-bottom: 5px; font-weight: bold; font-size: 0.9em; }
-.form-group input {
+.form-group input, .form-group textarea {
     width: 100%; padding: 12px; border: 1px solid #bdc3c7; border-radius: 6px; font-size: 1em; box-sizing: border-box;
 }
 
@@ -213,17 +213,6 @@ input:checked + .slider:before { transform: translateX(24px); }
     background: none; border: none; color: var(--accent-color); cursor: pointer; 
     text-decoration: underline; font-size: 0.9em; 
 }
-
-.blocked-list-container ul { 
-    list-style: none; padding: 0; margin-bottom: 15px; border: 1px solid #eee; 
-    border-radius: 4px; max-height: 150px; overflow-y: auto; 
-}
-.blocked-list-container li { 
-    padding: 8px 10px; border-bottom: 1px solid #eee; font-size: 0.9em; 
-}
-.blocked-list-container li:last-child { border-bottom: none; }
-.empty-msg { color: #ccc; font-style: italic; text-align: center; padding: 10px; }
-
 
 /* --- Styles de la Page de Gestion des Comptes (account_management.html) --- */
 .search-controls {
