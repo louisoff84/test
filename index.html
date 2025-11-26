@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniSearch AI - Moteur de Recherche</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="style.css"> 
 </head>
 <body>
 
@@ -27,7 +27,7 @@
     <div id="main-content">
         <header>
             <span id="user-info" style="margin-right: 20px;"></span>
-            <a href="login.html" class="admin-link" id="login-link">Connexion</a>
+            <a href="login.html" class="admin-link" id="login-link">Connexion</a> 
         </header>
 
         <main>
@@ -68,10 +68,10 @@
         
         const GROQ_API_URL = "https://api.groq.com/openai/v1/chat/completions";
         
-        // MODÈLE ACTUEL RECOMMANDÉ
+        // MODÈLE ACTUEL RECOMMANDÉ (llama-3.1 est le plus récent au moment de la rédaction)
         const GROQ_MODEL = "llama-3.1-8b-instant"; 
         
-        // Clés de stockage (DOIVENT CORRESPONDRE À ADMIN.HTML)
+        // Clés de stockage
         const STORAGE_MAINTENANCE_SITE = 'siteMaintenance';
         const STORAGE_MAINTENANCE_IA = 'iaMaintenance';
         const STORAGE_BLOCKED_USERS = 'blockedUsers';
@@ -93,6 +93,7 @@
             });
         });
 
+        // Met à jour le lien de connexion/déconnexion dans l'en-tête
         function updateLoginUI() {
             const isLoggedIn = localStorage.getItem(STORAGE_IS_LOGGED_IN) === 'true';
             const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
@@ -102,7 +103,7 @@
             if (isLoggedIn) {
                 loginLink.textContent = "Déconnexion";
                 loginLink.onclick = logout;
-                loginLink.href = "#"; // Annuler l'href
+                loginLink.href = "#"; 
                 userInfo.textContent = `Bienvenue, ${currentUser} |`;
             } else {
                 loginLink.textContent = "Connexion";
@@ -115,10 +116,11 @@
         function logout() {
             localStorage.removeItem(STORAGE_IS_LOGGED_IN);
             localStorage.removeItem(STORAGE_CURRENT_USER);
-            localStorage.removeItem('currentUserType'); // Nettoyer le type
+            localStorage.removeItem('currentUserType'); 
             window.location.href = 'index.html'; // Recharger la page
         }
 
+        // Vérifie les statuts de maintenance et de blocage pour afficher le bon écran
         function checkSystemStatus() {
             const currentUser = localStorage.getItem(STORAGE_CURRENT_USER) || 'anonyme'; 
             const siteMaint = localStorage.getItem(STORAGE_MAINTENANCE_SITE) === 'true';
@@ -140,7 +142,7 @@
                 return;
             }
 
-            // Si tout va bien, afficher le contenu
+            // Si tout va bien
             mainContent.style.display = 'block';
         }
 
@@ -188,7 +190,7 @@
             resultsArea.style.display = 'block';
             loading.style.display = 'block';
 
-            // Prompt Système
+            // Prompt Système pour guider l'IA
             const systemPrompt = `Tu es un assistant expert en livres, films, culture et savoir général. 
             Réponds à la question de manière structurée, claire et utile. 
             Réponds obligatoirement dans la langue : ${lang}.
@@ -226,7 +228,7 @@
 
             } catch (error) {
                 loading.style.display = 'none';
-                statusMsg.textContent = `Erreur IA : ${error.message}`;
+                statusMsg.textContent = `Erreur IA : ${error.message}. Vérifiez la clé API ou le nom du modèle Groq.`;
                 statusMsg.className = "error";
                 statusMsg.style.display = 'block';
                 console.error(error);
