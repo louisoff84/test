@@ -4,12 +4,24 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OmniSearch AI - Moteur de Recherche</title>
-    <link rel="stylesheet" href="css-public.css">
+    <link rel="stylesheet" href="css-public.css"> 
     
     <style>
         /* =========================================
            STYLES DU WIDGET DE CHAT FLOTTANT (Inclus pour la démonstration)
            ========================================= */
+        :root {
+            --primary: #1f2937;         
+            --accent: #3b82f6;          
+            --accent-hover: #2563eb;    
+            --bg-light: #f9fafb;        
+            --card-bg: #ffffff;         
+            --text-muted: #6b7280;      
+            --border-color: #e5e7eb;    
+            --radius-md: 10px;          
+            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.08);
+        }
+
         .chat-toggle-btn {
             position: fixed;
             bottom: 25px;
@@ -105,7 +117,6 @@
             background-color: var(--accent-hover);
         }
         
-        /* Styles des messages */
         .message {
             max-width: 85%;
             padding: 8px 12px;
@@ -128,7 +139,6 @@
             border-top-left-radius: 4px;
         }
 
-        /* Mode mobile: le widget prend plus de place */
         @media (max-width: 600px) {
             .chat-widget {
                 width: 90%;
@@ -140,6 +150,34 @@
             .chat-toggle-btn {
                 bottom: 10px;
                 right: 10px;
+            }
+        }
+        /* Style pour le sélecteur de mode */
+        #mode-select {
+            margin-right: 10px;
+            padding: 12px 15px;
+            border: 1px solid var(--border-color);
+            border-radius: var(--radius-md);
+            font-size: 1em;
+            color: var(--text-muted);
+            background-color: var(--bg-light);
+            cursor: pointer;
+        }
+        @media (max-width: 650px) {
+             #mode-select {
+                width: 100%;
+                margin-bottom: 10px;
+                margin-right: 0;
+            }
+        }
+        /* Mise à jour du style pour que le sélecteur de mode s'intègre bien dans la barre de recherche sur desktop */
+        @media (min-width: 651px) {
+            #mode-select {
+                border: none;
+                border-right: 1px solid var(--border-color);
+                padding: 0 10px;
+                background: transparent;
+                border-radius: 0;
             }
         }
     </style>
@@ -164,6 +202,11 @@
         <p class="subtitle">Votre moteur de recherche intelligent propulsé par l'IA.</p>
 
         <div class="search-container">
+             <select id="mode-select">
+                <option value="search">🌍 Mode Recherche</option>
+                <option value="code">💻 Mode Agent Code</option>
+                <option value="story">📚 Mode Conte d'Histoires</option>
+            </select>
             <input type="text" id="query-input" placeholder="Posez votre question...">
             <select id="language-select">
                 <option value="fr">Français</option>
@@ -174,7 +217,7 @@
 
         <div id="results-area">
             <div id="status-message" style="display:none;"></div>
-            <div id="ai-response" class="ai-card" style="display: none;"></div>
+            <div id="ai-response" class="ai-card" style="white-space: pre-wrap; display: none;"></div>
         </div>
 
     </main>
@@ -200,8 +243,10 @@
         // ==========================================================
         //         CONFIGURATION ET CLÉS API GROQ
         // ==========================================================
+        // ATTENTION: Ces clés sont visibles dans le code source côté client.
+        // Pour la production, utilisez un proxy côté serveur pour masquer les clés.
         const GROQ_API_KEY_SEARCH = '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';
-        // La clé pour le code (gsk_3QpXYSbw...) n'est pas utilisée ici, car c'est une fonction de recherche/chat.
+        const GROQ_API_KEY_CODE = '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';
         const GROQ_MODEL = 'llama-3.1-8b-instant';
         const GROQ_API_ENDPOINT = 'https://api.groq.com/openai/v1/chat/completions';
 
@@ -217,22 +262,41 @@
         const aiResponseDiv = document.getElementById('ai-response');
         const statusMessageDiv = document.getElementById('status-message');
         const searchButton = document.querySelector('.search-btn');
+        const modeSelect = document.getElementById('mode-select');
+        const chatWidget = document.getElementById('chat-widget');
+        const chatBody = document.getElementById('chat-body');
+        const chatInput = document.getElementById('chat-input');
 
-        // --- LOGIQUE D'INITIALISATION ET DE SÉCURITÉ ---
+
+        // ==========================================================
+        //         LOGIQUE D'INITIALISATION ET DE SÉCURITÉ
+        // ==========================================================
 
         document.addEventListener('DOMContentLoaded', () => {
             checkMaintenanceAndStatus();
-            // Lier la touche Entrée à la fonction de recherche principale
             queryInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     performSearch();
                 }
             });
+            modeSelect.addEventListener('change', updatePlaceholder);
+            updatePlaceholder(); // Appel initial
         });
 
+        function updatePlaceholder() {
+            const mode = modeSelect.value;
+            if (mode === 'code') {
+                queryInput.placeholder = "Entrez votre problème de code ou la fonction à générer...";
+            } else if (mode === 'story') { 
+                queryInput.placeholder = "Décrivez le héros, le lieu ou le type d'histoire que vous voulez...";
+            } else {
+                queryInput.placeholder = "Posez votre question...";
+            }
+        }
+        
         function displayStatusMessage(message, type = 'info') {
             statusMessageDiv.textContent = message;
-            statusMessageDiv.className = ''; // Réinitialiser les classes
+            statusMessageDiv.className = ''; 
             statusMessageDiv.classList.add('status-message');
             if (type === 'error') {
                 statusMessageDiv.classList.add('error');
@@ -267,8 +331,9 @@
                 displayStatusMessage("L'IA est en maintenance. Seule la recherche classique fonctionne.", 'error');
                 searchButton.disabled = true;
                 queryInput.placeholder = "Recherche IA désactivée...";
+                modeSelect.disabled = true;
                 
-                // Désactiver le chat si l'IA est en maintenance
+                // Désactiver le chat
                 document.getElementById('chat-input').disabled = true;
                 document.getElementById('chat-input').placeholder = "Chat désactivé (Maintenance IA)";
                 document.querySelector('.chat-input-area button').disabled = true;
@@ -278,7 +343,8 @@
                 
             } else {
                 searchButton.disabled = false;
-                queryInput.placeholder = "Posez votre question...";
+                modeSelect.disabled = false;
+                updatePlaceholder();
             }
             
             // Afficher l'état de connexion
@@ -286,7 +352,7 @@
             if (currentUser) {
                 userInfoDiv.innerHTML = `Connecté comme : <strong>${currentUser}</strong>`;
                 document.getElementById('admin-link').textContent = "Déconnexion";
-                document.getElementById('admin-link').href = "#"; // Utiliser JS pour la déconnexion
+                document.getElementById('admin-link').href = "#";
                 document.getElementById('admin-link').onclick = logout;
             } else {
                  userInfoDiv.innerHTML = `Invité`;
@@ -297,10 +363,10 @@
         }
         
         function logout() {
-            localStorage.removeItem(STORAGE_IS_LOGGED_IN);
-            localStorage.removeItem(STORAGE_CURRENT_USER);
-            localStorage.removeItem(STORAGE_CURRENT_USER_TYPE);
-            window.location.href = 'login.html'; // Rediriger vers la page de connexion
+            localStorage.removeItem('isLoggedIn');
+            localStorage.removeItem('currentUser');
+            localStorage.removeItem('currentUserType');
+            window.location.href = 'login.html';
         }
 
         // ==========================================================
@@ -310,6 +376,7 @@
         async function performSearch() {
             const query = queryInput.value.trim();
             const language = document.getElementById('language-select').value;
+            const mode = modeSelect.value; 
             
             if (!query) {
                 displayStatusMessage("Veuillez entrer une requête.", 'error');
@@ -322,18 +389,32 @@
                  return;
             }
             
-            displayStatusMessage("Recherche en cours...", 'info');
+            displayStatusMessage(`Recherche en cours (${mode === 'code' ? 'Mode Code' : mode === 'story' ? 'Mode Conte' : 'Mode Recherche'})...`, 'info');
             aiResponseDiv.style.display = 'none';
 
-            // Prompts pour l'IA
-            const systemPrompt = `You are a helpful and precise AI assistant called OmniSearch. You must answer the user's query in ${language}. Provide a detailed and well-structured response.`;
+            // 1. Déterminer la clé et le prompt selon le mode
+            let apiKey;
+            let systemPrompt;
+            let temperature = 0.7; // Température par défaut
+            
+            if (mode === 'code') {
+                apiKey = GROQ_API_KEY_CODE;
+                systemPrompt = `You are a specialized code generation assistant. Your response must be clean, use code blocks for any code output, and explain the code briefly. Answer in ${language}.`;
+            } else if (mode === 'story') { 
+                apiKey = GROQ_API_KEY_SEARCH; 
+                systemPrompt = `You are a creative and imaginative storyteller AI. You must write a captivating short story based on the user's request. Ensure the story is well-developed, engaging, and in ${language}. If the user mentions 'chat' or 'cat', the story must be about cats, kittens, or feline adventures.`;
+                temperature = 0.9; // Plus créatif
+            } else { // mode === 'search'
+                apiKey = GROQ_API_KEY_SEARCH;
+                systemPrompt = `You are a helpful and precise AI assistant called OmniSearch. You must answer the user's query in ${language}. Provide a detailed and well-structured response.`;
+            }
             
             try {
                 const response = await fetch(GROQ_API_ENDPOINT, {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${GROQ_API_KEY_SEARCH}`
+                        'Authorization': `Bearer ${apiKey}` 
                     },
                     body: JSON.stringify({
                         model: GROQ_MODEL,
@@ -341,7 +422,7 @@
                             { role: "system", content: systemPrompt },
                             { role: "user", content: query }
                         ],
-                        temperature: 0.7 
+                        temperature: temperature 
                     })
                 });
 
@@ -352,7 +433,7 @@
                 const data = await response.json();
                 const aiText = data.choices[0].message.content;
 
-                displayStatusMessage("Réponse de l'IA (llama-3.1-8b-instant) :", 'info');
+                displayStatusMessage(`Réponse de l'IA (${mode === 'code' ? 'Agent Code' : mode === 'story' ? 'Conte' : 'Recherche'}) :`, 'info');
                 aiResponseDiv.textContent = aiText;
                 aiResponseDiv.style.display = 'block';
 
@@ -360,8 +441,6 @@
                 console.error("Erreur de recherche IA:", error);
                 displayStatusMessage(`Erreur de connexion à l'IA: ${error.message}. Vérifiez la console pour plus de détails.`, 'error');
                 aiResponseDiv.style.display = 'none';
-            } finally {
-                 // Remettre le bouton actif
             }
         }
 
@@ -369,11 +448,8 @@
         // ==========================================================
         //         FONCTIONS DU WIDGET DE CHAT (IA)
         // ==========================================================
+        // Le chat est un assistant général et utilise la clé de recherche.
 
-        const chatWidget = document.getElementById('chat-widget');
-        const chatBody = document.getElementById('chat-body');
-        const chatInput = document.getElementById('chat-input');
-        
         document.getElementById('chat-toggle-btn').addEventListener('click', toggleChat);
         chatInput.addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
@@ -410,50 +486,13 @@
             addMessage(userText, 'user');
             chatInput.value = '';
 
-            // Ajouter le message de "frappe" de l'IA
             addMessage('...', 'ai');
             const typingMsg = chatBody.lastElementChild;
 
-            // Prompt simple pour le chat
             const chatSystemPrompt = "You are a quick, friendly, and informal chat assistant. Answer briefly in French.";
+            const apiKey = GROQ_API_KEY_SEARCH; 
 
             try {
                 const response = await fetch(GROQ_API_ENDPOINT, {
                     method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'Authorization': `Bearer ${GROQ_API_KEY_SEARCH}` // Utilise la même clé de recherche
-                    },
-                    body: JSON.stringify({
-                        model: GROQ_MODEL,
-                        messages: [
-                            { role: "system", content: chatSystemPrompt },
-                            { role: "user", content: userText }
-                        ],
-                        temperature: 0.8
-                    })
-                });
-
-                if (!response.ok) {
-                    throw new Error(`Erreur API: ${response.status}`);
-                }
-
-                const data = await response.json();
-                const aiText = data.choices[0].message.content;
-
-                // Remplacer le message de frappe par la réponse réelle
-                typingMsg.textContent = aiText;
-                typingMsg.classList.remove('ai-message');
-                typingMsg.classList.add('ai-message');
-
-            } catch (error) {
-                console.error("Erreur de chat IA:", error);
-                typingMsg.textContent = "Désolé, une erreur est survenue lors de la connexion à l'IA.";
-                typingMsg.classList.remove('ai-message');
-                typingMsg.classList.add('ai-message');
-            }
-        }
-        
-    </script>
-</body>
-</html>
+                    head
