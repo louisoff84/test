@@ -3,185 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>OmniSearch AI - Moteur de Recherche</title>
-    <link rel="stylesheet" href="css-public.css"> 
-    
-    <style>
-        /* =========================================
-           STYLES DU WIDGET DE CHAT FLOTTANT (Inclus pour la démonstration)
-           ========================================= */
-        :root {
-            --primary: #1f2937;         
-            --accent: #3b82f6;          
-            --accent-hover: #2563eb;    
-            --bg-light: #f9fafb;        
-            --card-bg: #ffffff;         
-            --text-muted: #6b7280;      
-            --border-color: #e5e7eb;    
-            --radius-md: 10px;          
-            --shadow-subtle: 0 4px 12px rgba(0, 0, 0, 0.08);
-        }
-
-        .chat-toggle-btn {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            width: 55px;
-            height: 55px;
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            border-radius: 50%;
-            font-size: 1.8em;
-            cursor: pointer;
-            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
-            z-index: 1000;
-            transition: transform 0.2s, background-color 0.2s;
-            line-height: 55px;
-            text-align: center;
-        }
-        .chat-toggle-btn:hover {
-            background-color: var(--accent-hover);
-            transform: scale(1.05);
-        }
-        
-        .chat-widget {
-            position: fixed;
-            bottom: 90px;
-            right: 25px;
-            width: 320px;
-            height: 400px;
-            background-color: var(--card-bg);
-            border-radius: var(--radius-md);
-            box-shadow: var(--shadow-subtle);
-            border: 1px solid var(--border-color);
-            z-index: 999;
-            display: none;
-            flex-direction: column;
-            overflow: hidden;
-        }
-        
-        .chat-header {
-            background-color: var(--primary);
-            color: white;
-            padding: 12px 15px;
-            font-weight: 600;
-            font-size: 1.1em;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-        }
-        .chat-header .close-btn {
-            background: none;
-            border: none;
-            color: white;
-            font-size: 1.2em;
-            cursor: pointer;
-            opacity: 0.8;
-            transition: opacity 0.2s;
-        }
-        .chat-header .close-btn:hover { opacity: 1; }
-
-        .chat-body {
-            flex-grow: 1;
-            padding: 10px;
-            overflow-y: auto;
-            background-color: var(--bg-light);
-            display: flex;
-            flex-direction: column;
-        }
-
-        .chat-input-area {
-            border-top: 1px solid var(--border-color);
-            padding: 10px;
-            display: flex;
-            gap: 5px;
-        }
-        .chat-input-area input {
-            flex-grow: 1;
-            padding: 8px;
-            border: 1px solid var(--border-color);
-            border-radius: 6px;
-            outline: none;
-        }
-        .chat-input-area button {
-            background-color: var(--accent);
-            color: white;
-            border: none;
-            padding: 8px 12px;
-            border-radius: 6px;
-            cursor: pointer;
-            transition: background-color 0.2s;
-        }
-        .chat-input-area button:hover {
-            background-color: var(--accent-hover);
-        }
-        
-        .message {
-            max-width: 85%;
-            padding: 8px 12px;
-            border-radius: 15px;
-            margin-bottom: 10px;
-            line-height: 1.4;
-            word-wrap: break-word;
-        }
-        .user-message {
-            background-color: var(--accent);
-            color: white;
-            margin-left: auto;
-            border-bottom-right-radius: 4px;
-        }
-        .ai-message {
-            background-color: white;
-            color: var(--primary);
-            border: 1px solid var(--border-color);
-            margin-right: auto;
-            border-top-left-radius: 4px;
-        }
-
-        @media (max-width: 600px) {
-            .chat-widget {
-                width: 90%;
-                height: 70%;
-                bottom: 10px;
-                right: 5%;
-                left: 5%;
-            }
-            .chat-toggle-btn {
-                bottom: 10px;
-                right: 10px;
-            }
-        }
-        /* Style pour le sélecteur de mode */
-        #mode-select {
-            margin-right: 10px;
-            padding: 12px 15px;
-            border: 1px solid var(--border-color);
-            border-radius: var(--radius-md);
-            font-size: 1em;
-            color: var(--text-muted);
-            background-color: var(--bg-light);
-            cursor: pointer;
-        }
-        @media (max-width: 650px) {
-             #mode-select {
-                width: 100%;
-                margin-bottom: 10px;
-                margin-right: 0;
-            }
-        }
-        /* Mise à jour du style pour que le sélecteur de mode s'intègre bien dans la barre de recherche sur desktop */
-        @media (min-width: 651px) {
-            #mode-select {
-                border: none;
-                border-right: 1px solid var(--border-color);
-                padding: 0 10px;
-                background: transparent;
-                border-radius: 0;
-            }
-        }
-    </style>
-</head>
+    <title>OmniSearch AI - Interface de Chat IA</title>
+    <link rel="stylesheet" href="css-public.css">
+    </head>
 <body>
 
     <div class="overlay-screen" id="maintenance-overlay" style="display:none;">
@@ -191,60 +15,69 @@
         <a href="login.html">Connexion Administrateur</a>
     </div>
 
-    
-    <header>
-        <div id="user-info"></div>
-        <a href="login.html" class="admin-link" id="admin-link">Connexion Admin</a>
-    </header>
+    <button class="mobile-sidebar-toggle" onclick="toggleSidebar()">☰ Menu Chats</button>
 
-    <main id="main-content">
-        <h1>OmniSearch AI</h1>
-        <p class="subtitle">Votre moteur de recherche intelligent propulsé par l'IA.</p>
+    <div id="app-container">
+        
+        <aside id="sidebar">
+            <h2>Discussions (Chats)</h2>
+            <button class="new-chat-btn" onclick="startNewChat()">+ Nouveau Chat</button>
 
-        <div class="search-container">
-             <select id="mode-select">
-                <option value="search">🌍 Mode Recherche</option>
-                <option value="code">💻 Mode Agent Code</option>
-                <option value="story">📚 Mode Conte d'Histoires</option>
-            </select>
-            <input type="text" id="query-input" placeholder="Posez votre question...">
-            <select id="language-select">
-                <option value="fr">Français</option>
-                <option value="en">English</option>
-            </select>
-            <button class="search-btn" onclick="performSearch()">Rechercher</button>
-        </div>
+            <ul id="chat-list">
+                <li class="chat-item active" data-chat-id="1">Nouvelle session IA (Actif)</li>
+                <li class="chat-item" data-chat-id="2">Idées de projet Python</li>
+                <li class="chat-item" data-chat-id="3">Histoire de chat magique</li>
+            </ul>
 
-        <div id="results-area">
-            <div id="status-message" style="display:none;"></div>
-            <div id="ai-response" class="ai-card" style="white-space: pre-wrap; display: none;"></div>
-        </div>
+            <div id="sidebar-footer">
+                <div id="user-info"></div>
+                <a href="login.html" class="admin-link" id="admin-link">Connexion Admin</a>
+            </div>
+        </aside>
 
-    </main>
-    
-    <button class="chat-toggle-btn" id="chat-toggle-btn">💬</button>
+        <section id="main-chat-area">
+            <h1>OmniSearch AI</h1>
+            <p class="subtitle">Votre assistant intelligent unifié (Recherche, Code, Histoire).</p>
 
-    <div class="chat-widget" id="chat-widget">
-        <div class="chat-header">
-            <span>OmniChat AI</span>
-            <button class="close-btn" onclick="toggleChat()">X</button>
-        </div>
-        <div class="chat-body" id="chat-body">
-            <div class="message ai-message">Bonjour ! Je suis OmniChat, l'assistant IA. Posez-moi une question !</div>
-        </div>
-        <div class="chat-input-area">
-            <input type="text" id="chat-input" placeholder="Écrivez votre message...">
-            <button onclick="sendChatMessage()">Envoyer</button>
-        </div>
+            <div id="response-container">
+                
+                <div id="ai-response-display">
+                    <div id="ai-response" class="ai-card" style="display: none;">
+                        Bienvenue ! Choisissez un mode ci-dessous et posez votre première question.
+                    </div>
+                    <div id="status-message" class="status-message" style="display:none;"></div>
+                </div>
+
+                <div class="input-mode-area">
+                    <div class="mode-select-area">
+                        <label for="mode-select-main">Mode IA :</label>
+                        <select id="mode-select-main">
+                            <option value="search">🌍 Recherche Générale</option>
+                            <option value="code">💻 Agent Code</option>
+                            <option value="story">📚 Conte d'Histoires</option>
+                        </select>
+                        
+                        <label for="language-select-main">Langue :</label>
+                        <select id="language-select-main">
+                            <option value="fr">Français</option>
+                            <option value="en">English</option>
+                        </select>
+                    </div>
+
+                    <div class="search-input-group">
+                        <input type="text" id="query-input-main" placeholder="Posez votre question...">
+                        <button class="search-btn-main" onclick="performSearch()">Envoyer</button>
+                    </div>
+                </div>
+            </div>
+
+        </section>
     </div>
-    
     
     <script>
         // ==========================================================
         //         CONFIGURATION ET CLÉS API GROQ
         // ==========================================================
-        // ATTENTION: Ces clés sont visibles dans le code source côté client.
-        // Pour la production, utilisez un proxy côté serveur pour masquer les clés.
         const GROQ_API_KEY_SEARCH = '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';
         const GROQ_API_KEY_CODE = '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';
         const GROQ_MODEL = 'llama-3.1-8b-instant';
@@ -258,14 +91,13 @@
         const STORAGE_IS_LOGGED_IN = 'isLoggedIn';
 
         // --- ÉLÉMENTS DU DOM ---
-        const queryInput = document.getElementById('query-input');
+        const sidebar = document.getElementById('sidebar');
+        const queryInput = document.getElementById('query-input-main');
         const aiResponseDiv = document.getElementById('ai-response');
         const statusMessageDiv = document.getElementById('status-message');
-        const searchButton = document.querySelector('.search-btn');
-        const modeSelect = document.getElementById('mode-select');
-        const chatWidget = document.getElementById('chat-widget');
-        const chatBody = document.getElementById('chat-body');
-        const chatInput = document.getElementById('chat-input');
+        const searchButton = document.querySelector('.search-btn-main');
+        const modeSelect = document.getElementById('mode-select-main');
+        const languageSelect = document.getElementById('language-select-main');
 
 
         // ==========================================================
@@ -274,23 +106,38 @@
 
         document.addEventListener('DOMContentLoaded', () => {
             checkMaintenanceAndStatus();
+            // Lier la touche Entrée au champ principal
             queryInput.addEventListener('keypress', (e) => {
                 if (e.key === 'Enter') {
                     performSearch();
                 }
             });
             modeSelect.addEventListener('change', updatePlaceholder);
-            updatePlaceholder(); // Appel initial
+            updatePlaceholder(); 
         });
+
+        // Toggle pour la sidebar sur mobile
+        function toggleSidebar() {
+            sidebar.style.display = sidebar.style.display === 'flex' ? 'none' : 'flex';
+        }
+
+        // Fonction pour simuler le début d'un nouveau chat
+        function startNewChat() {
+            alert("Nouvelle session de chat démarrée (Implémentation de l'historique nécessaire).");
+            // En réalité, ici vous réinitialiseriez l'affichage de la conversation
+            aiResponseDiv.innerHTML = "Bienvenue ! Choisissez un mode ci-dessous et posez votre première question.";
+            aiResponseDiv.style.display = 'block';
+            statusMessageDiv.style.display = 'none';
+        }
 
         function updatePlaceholder() {
             const mode = modeSelect.value;
             if (mode === 'code') {
-                queryInput.placeholder = "Entrez votre problème de code ou la fonction à générer...";
+                queryInput.placeholder = "Entrez votre problème de code (langage, fonction, débogage)...";
             } else if (mode === 'story') { 
-                queryInput.placeholder = "Décrivez le héros, le lieu ou le type d'histoire que vous voulez...";
+                queryInput.placeholder = "Décrivez les éléments de l'histoire que vous voulez inventer...";
             } else {
-                queryInput.placeholder = "Posez votre question...";
+                queryInput.placeholder = "Posez votre question générale à l'IA...";
             }
         }
         
@@ -303,20 +150,19 @@
             }
             statusMessageDiv.style.display = 'block';
         }
-
+        
+        // ... (checkMaintenanceAndStatus et logout restent inchangées) ...
         function checkMaintenanceAndStatus() {
             const siteMaintenance = localStorage.getItem(MAINTENANCE_SITE) === 'true';
             const iaMaintenance = localStorage.getItem(MAINTENANCE_IA) === 'true';
             const currentUser = localStorage.getItem(STORAGE_CURRENT_USER);
             const blockedUsers = JSON.parse(localStorage.getItem(BLOCKED_USERS) || '[]');
             
-            // 1. Maintenance Totale
             if (siteMaintenance) {
                 document.getElementById('maintenance-overlay').style.display = 'flex';
                 return;
             }
 
-            // 2. Utilisateur Bloqué
             if (currentUser && blockedUsers.includes(currentUser)) {
                 document.getElementById('maintenance-overlay').style.display = 'flex';
                 document.querySelector('.overlay-icon').textContent = '🚫';
@@ -326,39 +172,33 @@
                 return;
             }
 
-            // 3. Maintenance IA
             if (iaMaintenance) {
-                displayStatusMessage("L'IA est en maintenance. Seule la recherche classique fonctionne.", 'error');
+                displayStatusMessage("L'IA est en maintenance. Le service est désactivé.", 'error');
                 searchButton.disabled = true;
-                queryInput.placeholder = "Recherche IA désactivée...";
+                queryInput.disabled = true;
                 modeSelect.disabled = true;
-                
-                // Désactiver le chat
-                document.getElementById('chat-input').disabled = true;
-                document.getElementById('chat-input').placeholder = "Chat désactivé (Maintenance IA)";
-                document.querySelector('.chat-input-area button').disabled = true;
-                if (chatWidget.style.display === 'flex') {
-                     addMessage("L'assistant IA est temporairement en maintenance. Veuillez réessayer plus tard.", 'ai');
-                }
-                
+                languageSelect.disabled = true;
+                queryInput.placeholder = "Service IA désactivé (Maintenance)...";
             } else {
                 searchButton.disabled = false;
+                queryInput.disabled = false;
                 modeSelect.disabled = false;
+                languageSelect.disabled = false;
                 updatePlaceholder();
             }
             
-            // Afficher l'état de connexion
             const userInfoDiv = document.getElementById('user-info');
+            const adminLink = document.getElementById('admin-link');
             if (currentUser) {
-                userInfoDiv.innerHTML = `Connecté comme : <strong>${currentUser}</strong>`;
-                document.getElementById('admin-link').textContent = "Déconnexion";
-                document.getElementById('admin-link').href = "#";
-                document.getElementById('admin-link').onclick = logout;
+                userInfoDiv.innerHTML = `Connecté : <strong>${currentUser}</strong>`;
+                adminLink.textContent = "Déconnexion";
+                adminLink.href = "#";
+                adminLink.onclick = logout;
             } else {
                  userInfoDiv.innerHTML = `Invité`;
-                 document.getElementById('admin-link').textContent = "Connexion Admin";
-                 document.getElementById('admin-link').href = "login.html";
-                 document.getElementById('admin-link').onclick = null;
+                 adminLink.textContent = "Connexion Admin";
+                 adminLink.href = "login.html";
+                 adminLink.onclick = null;
             }
         }
         
@@ -369,18 +209,18 @@
             window.location.href = 'login.html';
         }
 
+
         // ==========================================================
-        //         FONCTIONS DE RECHERCHE PRINCIPALE (IA)
+        //         FONCTION DE RECHERCHE PRINCIPALE (IA)
         // ==========================================================
 
         async function performSearch() {
             const query = queryInput.value.trim();
-            const language = document.getElementById('language-select').value;
+            const language = languageSelect.value;
             const mode = modeSelect.value; 
             
             if (!query) {
                 displayStatusMessage("Veuillez entrer une requête.", 'error');
-                aiResponseDiv.style.display = 'none';
                 return;
             }
 
@@ -389,21 +229,23 @@
                  return;
             }
             
+            // Affichage initial avant l'appel API
             displayStatusMessage(`Recherche en cours (${mode === 'code' ? 'Mode Code' : mode === 'story' ? 'Mode Conte' : 'Mode Recherche'})...`, 'info');
-            aiResponseDiv.style.display = 'none';
+            aiResponseDiv.innerHTML = '...');
+            aiResponseDiv.style.display = 'block';
 
-            // 1. Déterminer la clé et le prompt selon le mode
+            // 1. Déterminer la clé, le prompt et la température selon le mode
             let apiKey;
             let systemPrompt;
-            let temperature = 0.7; // Température par défaut
+            let temperature = 0.7; 
             
             if (mode === 'code') {
                 apiKey = GROQ_API_KEY_CODE;
                 systemPrompt = `You are a specialized code generation assistant. Your response must be clean, use code blocks for any code output, and explain the code briefly. Answer in ${language}.`;
             } else if (mode === 'story') { 
-                apiKey = GROQ_API_KEY_SEARCH; 
+                apiKey = GROQ_API_KEY_SEARCH; // Utilise la clé de recherche pour la créativité
                 systemPrompt = `You are a creative and imaginative storyteller AI. You must write a captivating short story based on the user's request. Ensure the story is well-developed, engaging, and in ${language}. If the user mentions 'chat' or 'cat', the story must be about cats, kittens, or feline adventures.`;
-                temperature = 0.9; // Plus créatif
+                temperature = 0.9; 
             } else { // mode === 'search'
                 apiKey = GROQ_API_KEY_SEARCH;
                 systemPrompt = `You are a helpful and precise AI assistant called OmniSearch. You must answer the user's query in ${language}. Provide a detailed and well-structured response.`;
@@ -434,65 +276,21 @@
                 const aiText = data.choices[0].message.content;
 
                 displayStatusMessage(`Réponse de l'IA (${mode === 'code' ? 'Agent Code' : mode === 'story' ? 'Conte' : 'Recherche'}) :`, 'info');
-                aiResponseDiv.textContent = aiText;
-                aiResponseDiv.style.display = 'block';
+                
+                // CORRECTION: Utilisation de innerHTML pour gérer les sauts de ligne
+                // Le style white-space: pre-wrap aide aussi à l'affichage du code.
+                aiResponseDiv.innerHTML = aiText.replace(/\n/g, '<br>'); 
+                
+                // En réalité, on ajouterait ici la requête et la réponse à l'historique du chat actuel.
+                queryInput.value = ''; // Effacer la saisie après l'envoi
 
             } catch (error) {
                 console.error("Erreur de recherche IA:", error);
                 displayStatusMessage(`Erreur de connexion à l'IA: ${error.message}. Vérifiez la console pour plus de détails.`, 'error');
-                aiResponseDiv.style.display = 'none';
-            }
-        }
-
-
-        // ==========================================================
-        //         FONCTIONS DU WIDGET DE CHAT (IA)
-        // ==========================================================
-        // Le chat est un assistant général et utilise la clé de recherche.
-
-        document.getElementById('chat-toggle-btn').addEventListener('click', toggleChat);
-        chatInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                sendChatMessage();
-            }
-        });
-
-        function toggleChat() {
-            chatWidget.style.display = chatWidget.style.display === 'flex' ? 'none' : 'flex';
-            if (chatWidget.style.display === 'flex') {
-                chatInput.focus();
+                aiResponseDiv.innerHTML = "Une erreur est survenue lors de la récupération de la réponse.";
             }
         }
         
-        function addMessage(text, sender) {
-            const msgDiv = document.createElement('div');
-            msgDiv.classList.add('message', sender === 'user' ? 'user-message' : 'ai-message');
-            msgDiv.textContent = text;
-            chatBody.appendChild(msgDiv);
-            
-            chatBody.scrollTop = chatBody.scrollHeight;
-        }
-
-        async function sendChatMessage() {
-            const userText = chatInput.value.trim();
-            if (userText === '') return;
-            
-            if (localStorage.getItem(MAINTENANCE_IA) === 'true') {
-                 addMessage("L'assistant est en maintenance et ne peut pas répondre.", 'ai');
-                 chatInput.value = '';
-                 return;
-            }
-
-            addMessage(userText, 'user');
-            chatInput.value = '';
-
-            addMessage('...', 'ai');
-            const typingMsg = chatBody.lastElementChild;
-
-            const chatSystemPrompt = "You are a quick, friendly, and informal chat assistant. Answer briefly in French.";
-            const apiKey = GROQ_API_KEY_SEARCH; 
-
-            try {
-                const response = await fetch(GROQ_API_ENDPOINT, {
-                    method: 'POST',
-                    head
+    </script>
+</body>
+</html>
