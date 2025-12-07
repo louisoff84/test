@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>WISHI Gratuit ™ — Partage WIFI</title>
+  <style>
+    body { font-family: system-ui, Arial; background:#f7f9fc; color:#111; display:flex; align-items:center; justify-content:center; min-height:100vh; margin:0; }
+    .card { width: 360px; background:#fff; padding:20px; border-radius:12px; box-shadow:0 6px 24px rgba(20,30,60,0.08); text-align:center; }
+    h1 { font-size:18px; margin:0 0 8px; }
+    p.lead { font-size:13px; color:#555; margin:0 0 16px; }
+    .note { font-size:12px; color:#b03030; margin-bottom:12px; }
+    button { background:#0078d7; color:#fff; border:0; padding:10px 16px; border-radius:8px; cursor:pointer; font-size:14px; }
+    #progressWrap { margin-top:16px; display:none; }
+    .bar { width:100%; height:12px; background:#e6eef8; border-radius:999px; overflow:hidden; }
+    .barInner { width:0%; height:100%; background:#4caf50; transition:width .2s linear; }
+    .small { font-size:12px; color:#666; margin-top:8px; }
+    iframe { width:100%; height:200px; border:0; margin-top:12px; border-radius:8px; display:none; }
+    .legal { margin-top:12px; font-size:11px; color:#777; text-align:left; }
+  </style>
+</head>
+<body>
+  <div class="card" role="main" aria-labelledby="title">
+    <h1 id="title">WISHI Gratuit™ — Partage Wi-Fi</h1>
+    <p class="lead">Générateur gratuit — Aucune donnée sensible requise. Ceci est une <strong>parodie</strong>.</p>
+    <p class="note">Important : cette page est une blague inoffensive. Ne saisissez JAMAIS de mots de passe réels ici.</p>
+
+    <button id="startBtn">Générer Wi-Fi Gratuit</button>
+
+    <div id="progressWrap">
+      <div class="bar" aria-hidden="true"><div id="barInner" class="barInner"></div></div>
+      <div class="small" id="percent">0 %</div>
+    </div>
+
+    <iframe id="rick" src="" title="Rickroll"></iframe>
+
+    <div class="legal">
+      <strong>Note légale :</strong>
+      <ul>
+        <li>Ce site est une farce — aucun accès réel n'est distribué.</li>
+        <li>Ne pas utiliser pour tromper ou obtenir l'accès d'autrui sans autorisation.</li>
+        <li>Respectez la loi et la vie privée des personnes.</li>
+      </ul>
+    </div>
+  </div>
+
+  <script>
+    const btn = document.getElementById('startBtn');
+    const wrap = document.getElementById('progressWrap');
+    const barInner = document.getElementById('barInner');
+    const percent = document.getElementById('percent');
+    const iframe = document.getElementById('rick');
+
+    btn.addEventListener('click', () => {
+      // on montre la progression et on lance la "génération"
+      btn.style.display = 'none';
+      wrap.style.display = 'block';
+      let p = 0;
+      const t = setInterval(() => {
+        p += Math.floor(Math.random()*7)+3; // progression aléatoire
+        if (p > 100) p = 100;
+        barInner.style.width = p + '%';
+        percent.textContent = p + ' %';
+
+        if (p >= 100) {
+          clearInterval(t);
+          percent.textContent = 'Terminé — Préparation...';
+          // petit délai pour l'effet
+          setTimeout(() => {
+            percent.textContent = 'Prêt 🔥';
+            // on affiche le Rick Roll (ton lien)
+            iframe.src = 'https://www.youtube.com/embed/xvFZjo5PgG0?autoplay=1';
+            iframe.style.display = 'block';
+          }, 1000);
+        }
+      }, 350);
+    });
+  </script>
+</body>
+</html>
