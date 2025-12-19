@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Jeu Commande Vocale</title>
+    <style>
+        body { 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+            font-family: Arial, sans-serif; 
+            background: #2c3e50; 
+            color: white; 
+        }
+        canvas { 
+            border: 5px solid #ecf0f1; 
+            background: #34495e; 
+            box-shadow: 0 0 20px rgba(0,0,0,0.5);
+        }
+        #status { margin: 10px; font-weight: bold; color: #f1c40f; }
+        .controls { font-size: 0.9em; color: #bdc3c7; }
+    </style>
+</head>
+<body>
+
+    <h1>Labyrinthe Vocal</h1>
+    <p id="status">Cliquez sur le bouton pour démarrer</p>
+    <button id="startBtn">Démarrer le Micro</button>
+    <p class="controls">Dites : "Haut", "Bas", "Gauche" ou "Droite"</p>
+    
+    <canvas id="gameCanvas" width="400" height="400"></canvas>
+
+    <script>
+        const canvas = document.getElementById('gameCanvas');
+        const ctx = canvas.getContext('2d');
+        const status = document.getElementById('status');
+        const startBtn = document.getElementById('startBtn');
+
+        // Configuration du joueur et de la cible
+        let player = { x: 50, y: 50, size: 20, color: '#e74c3c' };
+        let goal = { x: 330, y: 330, size: 30, color: '#2ecc71' };
+        const step = 30;
+
+        // Fonction de dessin
+        function draw() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Dessiner l'arrivée
+            ctx.fillStyle = goal.color;
+            ctx.fillRect(goal.x, goal.y, goal.size, goal.size);
+            
+            // Dessiner le joueur
+            ctx.fillStyle = player.color;
+            ctx.fillRect(player.x, player.y, player.size, player.size);
+
+            // Vérifier la victoire
+            if (player.x < goal.x + goal.size && player.x + player.size > goal.x &&
+                player.y < goal.y + goal.size && player.y + player.size > goal.y) {
+                status.innerText = "BRAVO ! Vous avez gagné !";
+                resetPlayer();
+            }
+        }
+
+        function resetPlayer() {
+            player.x = 50; player.y = 50;
+        }
+
+        // --- PARTIE RECONNAISSANCE VOCALE ---
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        
+        if (!SpeechRecognition) {
+            status.innerText = "Désolé, votre navigateur ne supporte pas l'API vocale.";
+        } else {
+            const recognition = new SpeechRecognition();
+            recognition.lang = 'fr-FR';
+            recognition.continuous = true;
+            recognition.interimResults = false;
+
+            startBtn.onclick = () => {
+                recognition.start();
+                status.innerText = "Écoute en cours... Parlez !";
+                startBtn.style.display = 'none';
+            };
+
+            recognition.onresult = (event) => {
+                const command = event.results[event.results.length - 1][0].transcript.toLowerCase().trim();
+                status.innerText = "Commande reçue : " + command;
+
+                if (command.includes("haut")) player.y -= step;
+                if (command.includes("bas")) player.y += step;
+                if (command.includes("gauche")) player.x -= step;
+                if (command.includes("droite")) player.x += step;
+
+                // Empêcher de sortir du cadre
+                player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+                player.y = Math.max(0, Math.min(canvas.height - player.size, player.y));
+
+                draw();
+            };
+
+            recognition.onerror = (event) => {
+                status.innerText = "Erreur : " + event.error;
+            };
+
+            recognition.onend = () => {
+                recognition.start(); // Relancer l'écoute automatiquement
+            };
+        }
+
+        draw(); // Premier dessin initial
+    </script>
+</body>
+</html>
